@@ -66,3 +66,11 @@
 @media(max-width:760px){.mobile-nav{justify-content:space-between;gap:0;overflow-x:auto;scrollbar-width:none}.mobile-nav::-webkit-scrollbar{display:none}.mobile-nav [data-route="loans"]{display:grid}.mobile-nav .nav-item{flex:1 0 auto;min-width:52px;padding:5px 3px;font-size:clamp(.55rem,2.3vw,.68rem);white-space:nowrap}.mobile-nav .nav-item .ui-icon{width:19px;height:19px}}
 @media(max-width:360px){.mobile-nav .nav-item{min-width:50px}.mobile-nav{padding-left:2px;padding-right:2px}}
 @media(max-width:430px){.manage-wallets.line-view .wallet-link{grid-template-columns:38px minmax(0,1fr) auto!important}}
+/* Action icons share the same stroke and spacing across pages. */
+.has-action-icon{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.has-action-icon .ui-icon{width:17px;height:17px;flex:none;stroke-width:2}
+.text-btn.has-action-icon{justify-content:flex-start}
+.loan-item .has-action-icon{gap:5px}
+.settings-actions .has-action-icon,.settings-action.has-action-icon{white-space:nowrap}
+.file-label.has-action-icon{display:inline-flex}
+@media(max-width:430px){.page-head .has-action-icon{gap:6px}.page-head .has-action-icon .ui-icon{width:16px;height:16px}}

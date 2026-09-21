@@ -110,3 +110,40 @@ applyWalletInterest();render();
 const loanPageWithoutReopen=loanPage;
 loanPage=function(){return loanPageWithoutReopen().replace(/<button class="text-btn" data-loan-payment="[^"]+">Reopen<\/button>/g,'')};
 render();
+
+// Consistent, restrained SVG affordances for actions that retain useful labels.
+Object.assign(icons,{
+  add:'<path d="M12 5v14M5 12h14"/>',
+  edit:'<path d="M4 20h4l11-11-4-4L4 16v4Z"/><path d="m13 7 4 4"/>',
+  check:'<path d="m4 12 5 5L20 6"/>',
+  back:'<path d="m15 18-6-6 6-6"/>',
+  arrow:'<path d="M4 12h16m-6-6 6 6-6 6"/>',
+  archive:'<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v12h14V8m-10 5h6"/>',
+  download:'<path d="M12 3v12m-4-4 4 4 4-4M4 17v4h16v-4"/>',
+  upload:'<path d="M12 17V5m-4 4 4-4 4 4M4 17v4h16v-4"/>',
+  sliders:'<path d="M4 7h16M4 17h16M9 4v6m6 4v6"/>'
+});
+function decorateActions(){
+  const actions=[
+    ['[data-open="expense"]','expense'],['[data-open="bill"]','receipt'],['[data-open="wallet"]','add'],
+    ['[data-enhance-form="loan"]','add'],['[data-enhance-form="category"]','add'],
+    ['[data-wallet-edit],[data-loan-edit],[data-edit-bill],[data-edit-tx]','edit'],
+    ['[data-wallet-archive]','archive'],['[data-loan-payment]','check'],
+    ['[data-interest-wallet]','income'],['[data-export]','download'],
+    ['[data-theme-setting]','moon'],['[data-privacy-setting]','eye'],
+    ['[data-route="wallets"].text-btn','back'],['[data-route].text-btn','arrow']
+  ];
+  for(const [selector,icon] of actions)document.querySelectorAll(selector).forEach(button=>{
+    if(button.classList.contains('icon-action')||button.classList.contains('has-action-icon')||button.querySelector('svg'))return;
+    button.classList.add('has-action-icon');button.insertAdjacentHTML('afterbegin',svg(icon));
+  });
+  document.querySelectorAll('.file-label').forEach(label=>{
+    if(label.classList.contains('has-action-icon'))return;
+    label.classList.add('has-action-icon');label.insertAdjacentHTML('afterbegin',svg('upload'));
+  });
+}
+const renderBeforeActionIcons=render;
+render=function(){renderBeforeActionIcons();decorateActions()};
+const formBeforeActionIcons=enhanceForm;
+enhanceForm=function(kind,id=''){formBeforeActionIcons(kind,id);if(formDialog.open){saveBtn.classList.add('has-action-icon');if(!saveBtn.querySelector('svg'))saveBtn.insertAdjacentHTML('afterbegin',svg('check'))}};
+render();
