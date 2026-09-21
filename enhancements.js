@@ -39,3 +39,74 @@ document.addEventListener('click',e=>{let b=e.target.closest('[data-wallet-view]
 document.addEventListener('change',e=>{if(e.target.dataset.homeToggle){state.homeSections[e.target.dataset.homeToggle]=e.target.checked;save()}if(e.target.dataset.walletCompact!==undefined){state.walletCompact=e.target.checked;save();render()}if(e.target.classList.contains('month-picker')){selectedMonth=e.target.value;render()}if(e.target.id==='csvImport')importCsv(e.target.files[0])});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-route]');if(!b)return;location.hash=b.dataset.route;if(b.dataset.route==='loans'||b.dataset.route==='wallets')setTimeout(render,0)});
 window.addEventListener('hashchange',()=>setTimeout(render,0));render();
+
+// Wallet layout, loan bookkeeping, and interest are kept local with the rest of Cashual's data.
+state.walletLayout ||= state.walletCompact ? 'line' : 'grid';
+const cashualPlus = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+const cashualIconButton = (kind,label,icon) => `<button class="icon-action ${kind==='wallet'?'primary-btn':'ghost-btn'}" data-open="${kind}" aria-label="${label}" title="${label}">${icon}</button>`;
+const walletPageBeforeLayout = wallets;
+wallets = function(){
+  return walletPageBeforeLayout()
+    .replace('<button class="ghost-btn" data-open="transfer">Transfer</button>',cashualIconButton('transfer','Transfer between wallets',svg('transfer')))
+    .replace('<button class="primary-btn" data-open="wallet">Add wallet</button>',cashualIconButton('wallet','Add wallet',cashualPlus))
+    .replace('class="grid wallet-strip manage-wallets"',`class="grid wallet-strip manage-wallets ${state.walletLayout==='line'?'line-view':'grid-view'}"`);
+};
+const walletViewBeforeInterest = walletView;
+walletView = function(){
+  const w=state.wallets.find(x=>x.id===selectedWallet), html=walletViewBeforeInterest();
+  if(!w)return html;
+  const interest=w.interest;
+  const panel=`<div class="card interest-panel home-section"><div><h2>Wallet interest</h2><p>${interest?.enabled?`${escC(interest.rate)}% ${escC(interest.frequency)} · next credit ${escC(nextInterestDate(interest.lastApplied,interest.frequency))}`:'No automatic interest set'}</p></div><button class="ghost-btn" data-interest-wallet="${escC(w.id)}">${interest?'Edit interest':'Add interest'}</button></div>`;
+  return html.replace('<button class="ghost-btn" data-open="transfer">Transfer</button>',cashualIconButton('transfer','Transfer from this wallet',svg('transfer')))
+    .replace('<div class="card transactions home-section">',panel+'<div class="card transactions home-section">');
+};
+const settingsBeforeLayout=more;
+more=function(){return settingsBeforeLayout().replace(/<details class="card settings-block" open><summary>Wallet display<\/summary>[\s\S]*?<\/details>/,`<details class="card settings-block" open><summary>Wallet display</summary><div class="toggle-grid"><label><input type="radio" name="walletLayout" value="grid" ${state.walletLayout==='grid'?'checked':''}> Grid cards</label><label><input type="radio" name="walletLayout" value="line" ${state.walletLayout==='line'?'checked':''}> Compact lines</label></div></details>`)};
+function nextInterestDate(last,frequency){const d=new Date((last||currentDay())+'T12:00:00');if(Number.isNaN(+d))return currentDay();const day=d.getDate();if(frequency==='weekly')d.setDate(day+7);else if(frequency==='monthly'){d.setDate(1);d.setMonth(d.getMonth()+1);d.setDate(Math.min(day,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()))}else if(frequency==='yearly'){d.setDate(1);d.setFullYear(d.getFullYear()+1);d.setDate(Math.min(day,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()))}else d.setDate(day+1);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function applyWalletInterest(){let changed=false,today=currentDay();for(const w of state.wallets){const i=w.interest;if(!i?.enabled||!Number.isFinite(+i.rate)||+i.rate<=0)continue;let due=nextInterestDate(i.lastApplied,i.frequency),count=0;while(due<=today&&count++<366){const amount=Math.round(Math.max(0,+w.balance)*(+i.rate/100)*100)/100;if(amount>0){w.balance+=amount;state.transactions.unshift({id:crypto.randomUUID(),type:'income',title:'Wallet interest',amount,walletId:w.id,wallet:w.name,categoryId:'income-interest',category:'Interest',isoDate:due,time:'12:00',note:`${i.rate}% ${i.frequency} interest`})}i.lastApplied=due;changed=true;due=nextInterestDate(due,i.frequency)}}if(changed){save();render()}}
+const interestBaseForm=enhanceForm;
+enhanceForm=function(kind,id=''){
+  if(kind==='interest'){
+    const w=state.wallets.find(x=>x.id===id);if(!w)return;
+    if(quickDialog.open)quickDialog.close();editRecord={kind,id};formDialog.dataset.kind=kind;formOverline.textContent='Wallet';formTitle.textContent=`Interest · ${w.name}`;saveBtn.textContent='Save interest';
+    const i=w.interest||{};
+    formFields.innerHTML=`<div class="form-grid compact-form">${field('Interest per period (%)','rate','number',i.rate??0,'required min="0" max="100" step="0.001"')}${select('Frequency','frequency',[['daily','Daily'],['weekly','Weekly'],['monthly','Monthly'],['yearly','Yearly']],i.frequency||'monthly')}<label class="field check-field full"><input name="enabled" type="checkbox" ${i.enabled?'checked':''}> Enable automatic interest</label><p class="form-hint full">Credits compound on the wallet balance when Cashual is opened after each due date. This is a percentage per selected period, not an annualized rate.</p></div>`;
+    formDialog.showModal();return;
+  }
+  interestBaseForm(kind,id);
+  if(kind==='loan'){
+    const l=state.loans.find(x=>x.id===id);
+    formFields.querySelector('.compact-form')?.insertAdjacentHTML('beforeend',`<label class="field check-field full"><input name="moveFunds" type="checkbox" ${l?.funded?'checked':''} ${l?.funded?'disabled':''}> Record the initial loan movement in the related wallet</label><p class="form-hint full">${l?.funded?'Already recorded; wallet movement cannot be changed here.':'Optional. Lending subtracts from the wallet; borrowing adds to it.'}</p>`);
+  }
+};
+const interestBaseSubmit=entryForm.onsubmit;
+entryForm.onsubmit=async e=>{
+  if(editRecord?.kind==='interest'){
+    e.preventDefault();const w=state.wallets.find(x=>x.id===editRecord.id),d=Object.fromEntries(new FormData(entryForm)),rate=+d.rate;
+    if(!w||!Number.isFinite(rate)||rate<0||rate>100)return toastMsg('Enter a rate from 0 to 100%');
+    const old=w.interest,enabled=!!d.enabled;
+    w.interest={rate,frequency:d.frequency,enabled,lastApplied:old?.enabled&&enabled&&old.frequency===d.frequency?old.lastApplied:currentDay()};
+    save();editRecord=null;formDialog.close();render();toastMsg('Interest settings saved');return;
+  }
+  if(editRecord?.kind==='loan'){
+    e.preventDefault();const {id}=editRecord,d=Object.fromEntries(new FormData(entryForm)),existing=state.loans.find(x=>x.id===id),wallet=state.wallets.find(x=>x.id===d.walletId),amount=+d.amount;
+    if(!d.person?.trim()||!Number.isFinite(amount)||amount<=0)return toastMsg('Enter a person and valid amount');
+    if(existing?.funded&&(existing.amount!==amount||existing.walletId!==d.walletId||existing.direction!==d.direction))return toastMsg('Recorded loan amount, wallet, and direction cannot be edited');
+    if(d.moveFunds&&!wallet)return toastMsg('Choose a related wallet to record funds');
+    if(d.moveFunds&&!existing?.funded&&d.direction==='owed'&&wallet.balance<amount)return toastMsg('Not enough balance in the wallet');
+    const data={direction:d.direction,person:d.person.trim(),amount,walletId:d.walletId||'',date:d.date||currentDay(),note:d.note||'',settled:existing?.settled||false,funded:existing?.funded||!!d.moveFunds};
+    const loan=existing||{id:crypto.randomUUID()};Object.assign(loan,data);if(!existing)state.loans.unshift(loan);
+    if(d.moveFunds&&!existing?.funded){const movement=d.direction==='owed'?-amount:amount;wallet.balance+=movement;state.transactions.unshift({id:crypto.randomUUID(),type:movement<0?'expense':'income',title:`Loan · ${loan.person}`,amount:movement,walletId:wallet.id,wallet:wallet.name,category:'Loans',isoDate:data.date,time:'12:00',loanId:loan.id,note:data.note})}
+    save();editRecord=null;formDialog.close();render();toastMsg('Loan saved');return;
+  }
+  return interestBaseSubmit(e);
+};
+loanPage=function(){let owed=state.loans.filter(x=>x.direction==='owed'&&!x.settled).reduce((a,x)=>a+ +x.amount,0),owe=state.loans.filter(x=>x.direction==='owe'&&!x.settled).reduce((a,x)=>a+ +x.amount,0);return `<section><div class="page-head"><div><h2>Loans</h2><p>Track money owed to you and money you owe.</p></div><button class="primary-btn" data-enhance-form="loan">Add loan</button></div><div class="cashflow-stats card loan-totals"><div><span>Owed to you</span><strong>${cash(owed)}</strong></div><div><span>You owe</span><strong>${cash(owe)}</strong></div></div><div class="loan-list">${state.loans.length?state.loans.map(l=>`<div class="card loan-item"><div class="tx-icon">${svg('loan')}</div><div><strong>${escC(l.person)}</strong><small>${l.direction==='owed'?'Owes you':'You owe'} · ${escC(state.wallets.find(w=>w.id===l.walletId)?.name||'No wallet')}${l.funded?' · Wallet recorded':''}${l.note?` · ${escC(l.note)}`:''}</small></div><strong>${cash(l.amount)}</strong><span>${l.settled?'Settled':'Open'}</span><button class="text-btn" data-loan-edit="${l.id}">Edit</button><button class="text-btn" data-loan-payment="${l.id}">${l.settled?'Reopen':'Settle'}</button></div>`).join(''):'<div class="card empty">No loans yet</div>'}</div></section>`};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-open],[data-interest-wallet],[data-loan-payment]');if(!b)return;e.preventDefault();e.stopImmediatePropagation();if(b.dataset.open){if(b.dataset.open==='transfer'&&location.hash==='#wallet-detail'&&selectedWallet){enhanceForm('transfer');const from=formFields.querySelector('[name="from"]');if(from)from.value=selectedWallet}else openForm(b.dataset.open)}else if(b.dataset.interestWallet)enhanceForm('interest',b.dataset.interestWallet);else if(b.dataset.loanPayment){const l=state.loans.find(x=>x.id===b.dataset.loanPayment);if(!l)return;if(l.settled){l.settled=false;save();render();return}const w=state.wallets.find(x=>x.id===l.walletId);if(!w){l.settled=true;save();render();toastMsg('Loan settled without wallet movement');return}const movement=l.direction==='owed'?+l.amount:-l.amount;if(movement<0&&w.balance<Math.abs(movement))return toastMsg('Not enough balance in the related wallet');w.balance+=movement;l.settled=true;state.transactions.unshift({id:crypto.randomUUID(),type:movement<0?'expense':'income',title:`Loan settlement · ${l.person}`,amount:movement,walletId:w.id,wallet:w.name,category:'Loans',isoDate:currentDay(),time:new Date().toTimeString().slice(0,5),loanId:l.id});save();render();toastMsg('Loan settled and wallet updated')}},true);
+document.addEventListener('change',e=>{if(e.target.name==='walletLayout'){state.walletLayout=e.target.value;state.walletCompact=e.target.value==='line';save();render()}});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)applyWalletInterest()});
+applyWalletInterest();render();
+// A settled loan is final in this simple ledger; this prevents a second settlement credit/debit.
+const loanPageWithoutReopen=loanPage;
+loanPage=function(){return loanPageWithoutReopen().replace(/<button class="text-btn" data-loan-payment="[^"]+">Reopen<\/button>/g,'')};
+render();
