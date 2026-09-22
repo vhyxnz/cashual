@@ -1,5 +1,5 @@
 /* Allocations, lightweight challenges, and a transparent daily spending guide. */
-const CASHUAL_APP_VERSION='1.0.3';
+const CASHUAL_APP_VERSION='1.0.6';
 const allocationMonth=()=>currentDay().slice(0,7);
 const allocationActive=()=>state.allocations||[];
 const allocationPaid=(allocation,month=allocationMonth())=>state.transactions.filter(tx=>tx.allocationId===allocation.id&&(allocation.cycle==='once'||tx.isoDate?.startsWith(month))&&!tx.transferId).reduce((sum,tx)=>sum+Math.abs(+tx.amount||0),0);
@@ -113,12 +113,14 @@ importJson=async function(file){
   if(Array.isArray(source.noSpendCheckins))state.noSpendCheckins=[...new Set([...(state.noSpendCheckins||[]),...source.noSpendCheckins.filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d))])];
   if(source.safeSpend&&typeof source.safeSpend==='object')state.safeSpend=source.safeSpend;
   if(/^#[0-9a-f]{6}$/i.test(source.appAccent||''))state.appAccent=source.appAccent;
+  if(/^#[0-9a-f]{6}$/i.test(source.appSurface||''))state.appSurface=source.appSurface;
+  if(/^#[0-9a-f]{6}$/i.test(source.appIconColor||''))state.appIconColor=source.appIconColor;
   await save();render();
 };
 exportCsv=function(){
   const rows=[['type','data']];
   for(const [type,items] of [['wallet',state.wallets],['transaction',state.transactions],['category',state.categories],['bill',state.bills],['loan',state.loans],['budget',state.budgets],['goal',state.goals],['allocation',allocationActive()]])for(const item of items||[])rows.push([type,JSON.stringify(item)]);
-  rows.push(['profile',JSON.stringify(userProfile)],['safeSpend',JSON.stringify(state.safeSpend||{})],['noSpendCheckins',JSON.stringify(state.noSpendCheckins||[])],['appAccent',JSON.stringify(state.appAccent||'#d7f36a')]);
+  rows.push(['profile',JSON.stringify(userProfile)],['safeSpend',JSON.stringify(state.safeSpend||{})],['noSpendCheckins',JSON.stringify(state.noSpendCheckins||[])],['appAccent',JSON.stringify(state.appAccent||'#d7f36a')],['appSurface',JSON.stringify(state.appSurface||'#f4f4ef')],['appIconColor',JSON.stringify(state.appIconColor||'#1c3c30')]);
   downloadCashual(`cashual-${currentDay()}.csv`,rows.map(row=>row.map(csvQuote).join(',')).join('\r\n'),'text/csv;charset=utf-8');
   recordExport();
 };
@@ -134,6 +136,8 @@ importCsv=async function(file){
     if(type==='safeSpend'&&data&&typeof data==='object')state.safeSpend=data;
     if(type==='noSpendCheckins'&&Array.isArray(data))state.noSpendCheckins=[...new Set([...(state.noSpendCheckins||[]),...data.filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d))])];
     if(type==='appAccent'&&/^#[0-9a-f]{6}$/i.test(data||''))state.appAccent=data;
+    if(type==='appSurface'&&/^#[0-9a-f]{6}$/i.test(data||''))state.appSurface=data;
+    if(type==='appIconColor'&&/^#[0-9a-f]{6}$/i.test(data||''))state.appIconColor=data;
   }catch{}
   await save();render();
 };
