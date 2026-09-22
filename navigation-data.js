@@ -9,7 +9,7 @@ function drawMobileNav(){
   const labels=navLayout()==='both';
   const item=([id,icon,name])=>`<button type="button" class="mobile-nav-choice ${current===id?'active':''}" data-mobile-route="${id}" aria-label="${name}" title="${name}">${svg(icon)}<span class="mobile-nav-label">${name}</span></button>`;
   mobileNav.classList.toggle('nav-icons-only',!labels);
-  mobileNav.innerHTML=mobileDestinations.map(item).join('')+`<button type="button" class="mobile-nav-choice ${extraDestinations.some(([id])=>id===current)?'active':''}" data-nav-more aria-label="More pages and settings" aria-expanded="false" aria-controls="mobileNavDrawer" title="More pages and settings">${svg('settings')}<span class="mobile-nav-label">More</span></button><div class="mobile-nav-drawer" id="mobileNavDrawer" hidden><div class="mobile-nav-drawer-title">More pages</div>${extraDestinations.map(item).join('')}</div>`;
+  mobileNav.innerHTML=mobileDestinations.map(item).join('')+`<button type="button" class="mobile-nav-choice ${extraDestinations.some(([id])=>id===current)?'active':''}" data-nav-more aria-label="More pages and settings" aria-expanded="false" aria-controls="mobileNavDrawer" title="More pages and settings">${svg('settings')}<span class="mobile-nav-label">More</span></button><div class="mobile-nav-drawer" id="mobileNavDrawer" hidden><div class="mobile-nav-drawer-title">More pages</div><button type="button" class="mobile-nav-choice allocator-shortcut" data-allocator-shortcut aria-label="Budget allocator" title="Budget allocator">${svg('insights')}<span class="mobile-nav-label">Budget allocator</span></button>${extraDestinations.map(item).join('')}</div>`;
 }
 const moreBeforeNav=more;
 more=function(){
@@ -22,6 +22,11 @@ more=function(){
 const renderBeforeNav=render;
 render=function(){renderBeforeNav();drawMobileNav()};
 document.addEventListener('click',event=>{
+  if(event.target.closest('[data-allocator-shortcut]')){
+    location.hash='insights';render();
+    requestAnimationFrame(()=>document.getElementById('budgetAllocator')?.scrollIntoView({block:'start'}));
+    return;
+  }
   const moreButton=event.target.closest('[data-nav-more]');
   if(moreButton){const drawer=document.getElementById('mobileNavDrawer');drawer.hidden=!drawer.hidden;moreButton.setAttribute('aria-expanded',String(!drawer.hidden));return}
   const destination=event.target.closest('[data-mobile-route]');

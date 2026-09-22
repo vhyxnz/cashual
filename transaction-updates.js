@@ -1,5 +1,5 @@
 /* Split purchases and linked refunds keep one wallet movement per real event. */
-const CASHUAL_RELEASE='1.0.1';
+const CASHUAL_RELEASE='1.0.2';
 const expenseCategories=()=>state.categories.filter(c=>c.group!=='income');
 const cents=n=>Math.round((+n||0)*100);
 function cashualParts(tx){

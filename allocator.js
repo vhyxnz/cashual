@@ -1,5 +1,5 @@
 /* Allocations, lightweight challenges, and a transparent daily spending guide. */
-const CASHUAL_APP_VERSION='1.0.1';
+const CASHUAL_APP_VERSION='1.0.2';
 const allocationMonth=()=>currentDay().slice(0,7);
 const allocationActive=()=>state.allocations||[];
 const allocationPaid=(allocation,month=allocationMonth())=>state.transactions.filter(tx=>tx.allocationId===allocation.id&&(allocation.cycle==='once'||tx.isoDate?.startsWith(month))&&!tx.transferId).reduce((sum,tx)=>sum+Math.abs(+tx.amount||0),0);
@@ -27,7 +27,7 @@ function allocationCard(a){
   return `<article class="card allocation-card"><div class="allocation-top"><div><small>${a.cycle==='once'?'One-time target':'Monthly target'}${a.person?' · '+escC(a.person):''}</small><h3>${escC(a.name)}</h3></div><button type="button" data-allocation-edit="${escC(a.id)}" aria-label="Edit ${escC(a.name)}" title="Edit allocation">${svg('edit')}</button></div><div class="allocation-figures"><strong>${cash(paid)} <small>contributed</small></strong><span>${cash(a.target)} goal</span></div><div class="progress"><span style="width:${progress}%"></span></div><div class="allocation-bottom"><small>${remaining?`${cash(remaining)} left`:'Target reached'} · ${progress}%</small><button type="button" class="ghost-btn allocation-contribute" data-allocation-contribute="${escC(a.id)}">${svg('add')} Record contribution</button></div></article>`;
 }
 function allocationSection(){
-  return `<section class="allocation-section home-section"><div class="card-head"><div><h2>Allocations</h2><p>Plan and track where you set money aside or give it.</p></div><button type="button" class="primary-btn allocation-add" data-allocation-add aria-label="Add allocation" title="Add allocation">${svg('add')}</button></div><div class="allocation-grid">${allocationActive().length?allocationActive().map(allocationCard).join(''):'<div class="card empty">No allocations yet. Add a target for any purpose.</div>'}</div></section>`;
+  return `<section class="allocation-section home-section" id="budgetAllocator"><div class="card-head"><div><h2>Budget allocator</h2><p>Plan and track where you set money aside or give it.</p></div><button type="button" class="primary-btn allocation-add" data-allocation-add aria-label="Add allocation" title="Add allocation">${svg('add')}</button></div><div class="allocation-grid">${allocationActive().length?allocationActive().map(allocationCard).join(''):'<div class="card empty">No allocations yet. Add a target for any purpose.</div>'}</div></section>`;
 }
 function achievementSection(){
   const currentMonth=allocationMonth(),expenses=state.transactions.filter(t=>t.type==='expense'&&t.isoDate?.startsWith(currentMonth)),checkins=(state.noSpendCheckins||[]).filter(d=>d.startsWith(currentMonth)&&!expenses.some(t=>t.isoDate===d)),streak=state.streak?.count||0;
@@ -44,7 +44,7 @@ function achievementSection(){
   return `<section class="challenge-section home-section"><div class="card-head"><div><h2>Challenges & achievements</h2><p>Small wins from your actual records.</p></div></div><div class="challenge-grid">${items.map(c=>`<article class="card challenge-card ${c.value>=c.goal?'earned':''}"><span class="challenge-icon">${svg(c.icon)}</span><div><strong>${c.name}</strong><small>${c.detail}</small><div class="progress"><span style="width:${c.value/c.goal*100}%"></span></div><small>${c.value}/${c.goal}${c.value>=c.goal?' · Achieved':''}</small></div></article>`).join('')}</div><div class="card no-spend-checkin"><div><strong>Did you have a no-spend day?</strong><small>${checked?'Checked in today':spentToday?'An expense is already recorded today':'Check in once today to count it'}</small></div><button type="button" class="ghost-btn" data-no-spend-checkin ${checked||spentToday?'disabled':''}>${svg('check')} ${checked?'Done':'Check in'}</button></div></section>`;
 }
 const insightsBeforeAllocation=insights;
-insights=function(){return insightsBeforeAllocation()+allocationSection()+achievementSection()};
+insights=function(){return allocationSection()+insightsBeforeAllocation()+achievementSection()};
 const homeBeforeAllocation=home;
 home=function(){return homeBeforeAllocation()+safeSpendCard()};
 const settingsBeforeSafe=more;
