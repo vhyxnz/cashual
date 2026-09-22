@@ -1,7 +1,7 @@
 /* Cashual enhancements: all records remain local to this browser. */
 const $c=s=>document.querySelector(s),escC=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const cash=n=>`₱${Math.abs(+n||0).toLocaleString('en-PH',{maximumFractionDigits:2})}`;
-const currentDay=()=>new Date().toISOString().slice(0,10),currentMonth=()=>currentDay().slice(0,7);
+const currentDay=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`},currentMonth=()=>currentDay().slice(0,7);
 state.loans??=[];state.homeSections={cashflow:true,spending:true,activity:true,wallets:true,bills:true,...state.homeSections};
 state.walletCompact??=false;
 state.categories.forEach(c=>{c.id??=crypto.randomUUID();c.parent??=''});

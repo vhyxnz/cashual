@@ -74,3 +74,65 @@
 .settings-actions .has-action-icon,.settings-action.has-action-icon{white-space:nowrap}
 .file-label.has-action-icon{display:inline-flex}
 @media(max-width:430px){.page-head .has-action-icon{gap:6px}.page-head .has-action-icon .ui-icon{width:16px;height:16px}}
+
+/* Native-like quick entry, cards, budgets, and swipe surfaces */
+html{scroll-padding-top:env(safe-area-inset-top)}
+main{padding-top:max(28px,env(safe-area-inset-top))}
+.quick-entry-dialog{width:min(440px,calc(100% - 24px));padding:25px;background:var(--card);color:var(--ink);max-height:calc(100dvh - 24px);overflow:auto}
+.quick-entry-dialog h2{font:700 1.4rem Manrope;margin:3px 0 15px}
+.quick-entry-dialog .field{margin:12px 0}.quick-entry-dialog .field>span,.quick-category-label{font-size:.76rem;font-weight:700;color:var(--muted)}
+.quick-entry-dialog .field input,.quick-entry-dialog .field select{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink)}
+.quick-entry-dialog input[name="amount"]{font:700 2rem Manrope}
+.quick-type{display:grid;grid-template-columns:1fr 1fr;gap:8px}.quick-type button,.quick-category{border:1px solid var(--line);border-radius:11px;background:var(--paper);padding:10px;color:var(--ink)}
+.quick-type .active,.quick-category.active{border-color:var(--lime2);background:var(--lime);color:#171b16}
+.quick-categories{display:flex;gap:7px;overflow-x:auto;scroll-snap-type:x proximity;padding:8px 0 5px;scrollbar-width:none}
+.quick-category{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;scroll-snap-align:start;font-size:.78rem}
+.quick-category .ui-icon{width:17px;height:17px}.quick-save{width:100%;margin-top:10px;padding:13px}
+.fab{display:none}.swipe-shell{position:relative;overflow:hidden;isolation:isolate;border-radius:18px}
+.swipe-back{position:absolute;inset:0 auto 0 0;width:86px;display:flex;align-items:center;justify-content:center;gap:4px;background:#437f91;color:#fff;font-size:.76rem;font-weight:700;cursor:pointer}
+.swipe-back.swipe-archive,.swipe-back.swipe-delete{inset:0 0 0 auto;background:#a04643}
+.swipe-back .ui-icon{width:16px;height:16px}.swipe-surface,.swipe-shell>.account-card{position:relative;z-index:1;transform:translateX(var(--swipe-x,0));transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+.swipe-shell.swiping .swipe-surface,.swipe-shell.swiping>.account-card{transition:none}
+.tx-swipe{border-radius:10px}.tx-swipe .tx{background:var(--card)}.tx-swipe+.tx-swipe{border-top:1px solid var(--line)}
+.wallet-shell{min-width:0;scroll-snap-align:center}.account-card{height:100%;min-height:185px;padding:0!important;overflow:hidden;border-radius:20px!important;box-shadow:0 12px 30px rgba(0,0,0,.12);transition:transform .2s,box-shadow .2s}
+.account-card::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.23),transparent 44%),linear-gradient(0deg,rgba(0,0,0,.25),transparent 60%);pointer-events:none}
+.account-card::after{content:"";position:absolute;inset:auto -30px -65px auto;width:200px;height:150px;background:rgba(255,255,255,.12);filter:blur(28px);transform:rotate(-28deg);pointer-events:none}
+.wallet-shell:hover .account-card{box-shadow:0 18px 40px rgba(0,0,0,.18)}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){.wallet-shell:hover{transform:perspective(900px) translateY(-4px) rotateX(1.2deg)}.wallet-shell:active{transform:perspective(900px) translateY(-1px) scale(.99)}.wallet-shell{transition:transform .2s}}
+.wallet-main{position:relative;z-index:1;display:grid;align-content:end;justify-items:start;width:100%;min-height:185px;padding:20px;border:0;background:none;text-align:left;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.55)}
+.wallet-main .wallet-icon,.wallet-main .wallet-image{position:absolute;top:18px;left:18px;width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.3);backdrop-filter:blur(14px);display:grid;place-items:center}
+.wallet-main .wallet-name,.wallet-main .wallet-amount,.wallet-main small{color:#fff!important;margin:0;text-shadow:0 1px 4px rgba(0,0,0,.55)}
+.wallet-main .wallet-name{font-size:.88rem}.wallet-main .wallet-amount{font:700 1.5rem Manrope}.wallet-main small{font-size:.72rem;opacity:.88}
+.wallet-card-tools{position:absolute;z-index:3;top:15px;right:15px;display:flex;gap:6px}.wallet-card-tools button,.wallet-card-actions button{border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.17);backdrop-filter:blur(14px);color:#fff;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;gap:5px}
+.wallet-card-tools button{width:34px;height:34px}.wallet-card-tools .ui-icon,.wallet-card-actions .ui-icon{width:17px;height:17px}
+.wallet-card-actions{position:absolute;z-index:3;right:14px;top:56px;display:grid;gap:6px}.wallet-card-actions[hidden]{display:none}.wallet-card-actions button{padding:8px 10px;font-size:.75rem}
+.wallet-main .card-hidden{letter-spacing:.08em}.wallet-detail-grid .wallet-shell{min-width:0}
+.manage-wallets.line-view .wallet-shell{width:100%}.manage-wallets.line-view .account-card{min-height:82px}.manage-wallets.line-view .wallet-main{min-height:82px;padding:10px 88px 10px 68px;display:flex;flex-direction:column;justify-content:center}
+.manage-wallets.line-view .wallet-main .wallet-icon,.manage-wallets.line-view .wallet-main .wallet-image{top:18px;left:14px}
+.manage-wallets.line-view .wallet-main .wallet-amount{position:absolute;right:18px;top:28px;font-size:1rem}.manage-wallets.line-view .wallet-main small{display:block;font-size:.66rem}
+.manage-wallets.line-view .wallet-card-tools{display:none}
+.bill-card{display:flex;align-items:center;gap:10px;margin:9px 0}.bill-info{display:grid;gap:4px;flex:1;min-width:120px}.bill-info small,.budget-card small{color:var(--muted);font-size:.73rem}.due-badge{border-radius:999px;padding:6px 9px;background:var(--paper);font-size:.7rem;white-space:nowrap}.due-badge.overdue{background:#ffe2dc;color:#87352a}
+.budget-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:16px}.budget-card-head{display:flex;justify-content:space-between;gap:8px}.budget-card-head>div{display:grid;gap:4px}.budget-ring{width:112px;height:112px;border-radius:50%;background:conic-gradient(var(--lime2) var(--progress),var(--line) var(--progress));display:grid;place-items:center;margin:15px auto}.budget-ring>div{width:80px;height:80px;border-radius:50%;background:var(--card);display:grid;place-content:center;text-align:center}.budget-ring strong{font:700 1.2rem Manrope}.budget-numbers{display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:8px}
+@media(max-width:760px){main{padding-top:calc(14px + env(safe-area-inset-top));padding-bottom:calc(108px + env(safe-area-inset-bottom))}.mobile-nav{padding-bottom:calc(7px + env(safe-area-inset-bottom))}.fab{display:grid!important;right:18px;bottom:calc(76px + env(safe-area-inset-bottom));background:var(--lime);color:#171b16}.top-actions .header-add{display:none}.wallet-strip:not(.manage-wallets){display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;padding-bottom:6px;scrollbar-width:none}.wallet-strip:not(.manage-wallets) .wallet-shell{flex:0 0 min(76vw,280px)}.manage-wallets.grid-view{grid-template-columns:repeat(2,minmax(0,1fr))}.bill-card{flex-wrap:wrap}.bill-card .bill-info{flex-basis:calc(100% - 55px)}.quick-entry-dialog{margin:auto auto max(12px,env(safe-area-inset-bottom));border-radius:22px}}
+@media(max-width:430px){.manage-wallets.grid-view{grid-template-columns:1fr}.wallet-main{min-height:170px}.bill-card .due-badge{margin-left:0}}
+@media(prefers-reduced-motion:reduce){.swipe-surface,.swipe-shell>.account-card,.wallet-shell{transition:none!important}}
+.cashual-loading .app-shell{pointer-events:none;opacity:.45}.cashual-loading::after{content:"Loading your local data…";position:fixed;z-index:20;inset:50% auto auto 50%;transform:translate(-50%,-50%);padding:12px 18px;border-radius:13px;background:var(--card);color:var(--ink);box-shadow:var(--shadow);white-space:nowrap}
+
+/* Premium mark and compact icon-only actions. Labels remain available to assistive technology. */
+.brand-logo{width:42px;height:42px;border-radius:14px}.mobile-brand-logo{width:42px;height:42px;border-radius:14px}.welcome-mark img{width:56px;height:56px;border-radius:16px}
+.icon-only{width:44px;min-width:44px;height:44px;padding:0!important;display:inline-grid!important;place-items:center!important;gap:0!important;text-align:center!important;line-height:1}
+.icon-only .ui-icon,.icon-only>svg{width:21px;height:21px;stroke-width:2;flex:none}
+.text-btn.icon-only{border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--ink)}
+.page-head .icon-only,.detail-actions .icon-only,.settings-actions .icon-only{flex:0 0 44px}
+.quick-grid button.icon-only{width:100%;height:68px;border-radius:15px}.quick-grid button.icon-only .ui-icon{width:25px;height:25px}
+.quick-type button.icon-only{width:100%;height:43px}.quick-save.icon-only{width:100%;height:48px}
+.home-shortcuts button.icon-only{width:100%;height:60px;justify-content:center}.home-shortcuts button.icon-only .ui-icon{width:25px;height:25px}
+.filter-row .chip.icon-only,.range-tabs .chip.icon-only{border-radius:12px}
+.category-grid .category-pill,.quick-categories .quick-category{font-size:.8rem}
+.file-label.icon-only{width:44px;min-width:44px;height:44px;display:inline-grid;place-items:center;border-radius:12px}
+.swipe-back.icon-only{width:80px;height:100%;border-radius:0}.swipe-back.icon-only .ui-icon{width:20px;height:20px}
+.wallet-card-actions button.icon-only{width:39px;height:39px;padding:0}.wallet-card-actions button.icon-only .ui-icon{width:18px;height:18px}
+.loan-item .icon-only,.bill-card .icon-only{width:40px;min-width:40px;height:40px}
+.settings-page>.shortcut-settings{margin:0 0 14px}.settings-block:not([open]){padding:14px 18px}.settings-block:not([open]) summary{margin:0}
+@media(min-width:761px){.rail{width:86px;padding:22px 11px}.brand{justify-content:center;margin:2px 0 34px}.brand>span{display:none}.rail nav{justify-items:center}.rail .nav-item.icon-only{width:52px;height:52px;border-radius:14px}.rail .nav-item.active:after{display:none}.rail-foot{display:grid;justify-items:center}.rail-foot .privacy{width:46px;height:46px;margin:3px 0;font-size:0;display:grid;place-items:center;padding:0}.rail-foot .privacy span{width:22px}.rail-foot .privacy .ui-icon{width:20px;height:20px}.rail-foot .profile{width:100%;justify-content:center;padding:14px 0 0}.rail-foot .profile div{display:none}main{margin-left:86px}}
+@media(max-width:760px){.mobile-nav .nav-item.icon-only{min-width:44px;width:auto;height:47px;flex:1 0 auto;padding:0!important}.mobile-nav .nav-item.icon-only .ui-icon{width:23px;height:23px}.topbar-title{gap:10px}.topbar .mobile-brand-logo{display:block}}
