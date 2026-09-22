@@ -1,5 +1,5 @@
-const CACHE='cashual-v31';
-const ASSETS=['./','index.html','styles.css?v=30','app.js','enhancements.js?v=30','features.js?v=30','ui-polish.js?v=30','manifest.webmanifest','cashual-mark.svg','cashual-icon-180.png','cashual-icon-192.png','cashual-icon-512.png'];
+const CACHE='cashual-v33';
+const ASSETS=['./','index.html','styles.css?v=33','app.js','enhancements.js?v=30','features.js?v=30','ui-polish.js?v=30','navigation-data.js?v=33','manifest.webmanifest','cashual-mark.svg','cashual-icon-180.png','cashual-icon-192.png','cashual-icon-512.png'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
   self.skipWaiting();

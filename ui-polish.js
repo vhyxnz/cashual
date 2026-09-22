@@ -41,7 +41,7 @@ function iconForControl(button,label){
 }
 function polishControls(){
   for(const button of document.querySelectorAll('button')){
-    if(button.matches('.wallet-main,.profile-setting,.setting,.category-pill,.quick-category,.day,[data-wallet-privacy],[data-wallet-more],#themeBtn,#privacyBtn'))continue;
+    if(button.matches('.wallet-main,.profile-setting,.setting,.category-pill,.quick-category,.day,.data-action-row,.mobile-nav-choice,[data-wallet-privacy],[data-wallet-more],#themeBtn,#privacyBtn'))continue;
     const visibleText=button.textContent.trim().replace(/\s+/g,' ');
     const label=button.getAttribute('aria-label')||button.dataset.controlLabel||visibleText;
     const icon=iconForControl(button,label);
@@ -52,7 +52,7 @@ function polishControls(){
     button.classList.add('icon-only');
   }
   for(const label of document.querySelectorAll('.file-label')){
-    if(label.classList.contains('icon-only'))continue;
+    if(label.classList.contains('icon-only')||label.classList.contains('data-action-row'))continue;
     const input=label.querySelector('input');if(!input)continue;
     const name=label.textContent.trim();label.setAttribute('aria-label',name);label.title=name;
     label.replaceChildren();label.insertAdjacentHTML('afterbegin',svg('upload'));label.append(input);label.classList.add('icon-only');
