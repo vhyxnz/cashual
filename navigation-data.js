@@ -9,7 +9,7 @@ function drawMobileNav(){
   const labels=navLayout()==='both';
   const item=([id,icon,name])=>`<button type="button" class="mobile-nav-choice ${current===id?'active':''}" data-mobile-route="${id}" aria-label="${name}" title="${name}">${svg(icon)}<span class="mobile-nav-label">${name}</span></button>`;
   mobileNav.classList.toggle('nav-icons-only',!labels);
-  mobileNav.innerHTML=mobileDestinations.map(item).join('')+`<button type="button" class="mobile-nav-choice ${extraDestinations.some(([id])=>id===current)?'active':''}" data-nav-more aria-label="More pages" aria-expanded="false" aria-controls="mobileNavDrawer" title="More pages">${svg('more')}<span class="mobile-nav-label">More</span></button><div class="mobile-nav-drawer" id="mobileNavDrawer" hidden><div class="mobile-nav-drawer-title">More pages</div>${extraDestinations.map(item).join('')}</div>`;
+  mobileNav.innerHTML=mobileDestinations.map(item).join('')+`<button type="button" class="mobile-nav-choice ${extraDestinations.some(([id])=>id===current)?'active':''}" data-nav-more aria-label="More pages and settings" aria-expanded="false" aria-controls="mobileNavDrawer" title="More pages and settings">${svg('settings')}<span class="mobile-nav-label">More</span></button><div class="mobile-nav-drawer" id="mobileNavDrawer" hidden><div class="mobile-nav-drawer-title">More pages</div>${extraDestinations.map(item).join('')}</div>`;
 }
 const moreBeforeNav=more;
 more=function(){
