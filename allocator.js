@@ -1,5 +1,5 @@
 /* Allocations, lightweight challenges, and a transparent daily spending guide. */
-const CASHUAL_APP_VERSION='1.0.2';
+const CASHUAL_APP_VERSION='1.0.3';
 const allocationMonth=()=>currentDay().slice(0,7);
 const allocationActive=()=>state.allocations||[];
 const allocationPaid=(allocation,month=allocationMonth())=>state.transactions.filter(tx=>tx.allocationId===allocation.id&&(allocation.cycle==='once'||tx.isoDate?.startsWith(month))&&!tx.transferId).reduce((sum,tx)=>sum+Math.abs(+tx.amount||0),0);
@@ -52,7 +52,7 @@ more=function(){return settingsBeforeSafe().replace('</section>',`<details class
 
 function allocationDialog(a){
   let dialog=document.getElementById('allocationDialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='allocationDialog';dialog.className='transaction-detail-dialog';document.body.append(dialog)}
-  dialog.innerHTML=`<form class="detail-sheet" id="allocationForm"><button type="button" class="detail-close" data-close-allocation aria-label="Close">${svg('close')}</button><p class="overline">${a?'Edit':'New'} allocation</p><h2>Budget allocator</h2><label class="field"><span>Title</span><input name="name" required maxlength="60" placeholder="e.g. Emergency fund" value="${escC(a?.name||'')}"></label><label class="field"><span>Person or purpose (optional)</span><input name="person" maxlength="60" value="${escC(a?.person||'')}"></label><label class="field"><span>Target amount</span><input name="target" type="number" required min="0.01" step="0.01" value="${a?.target||''}"></label><label class="field"><span>Cycle</span><select name="cycle"><option value="monthly" ${a?.cycle!=='once'?'selected':''}>Every month</option><option value="once" ${a?.cycle==='once'?'selected':''}>One-time target</option></select></label><div class="detail-footer"><button class="primary-btn" type="submit">Save allocation</button>${a?`<button type="button" class="ghost-btn danger" data-allocation-remove="${escC(a.id)}">Remove plan</button>`:''}</div></form>`;
+  dialog.innerHTML=`<form class="detail-sheet" id="allocationForm"><button type="button" class="detail-close" data-close-allocation aria-label="Close">${svg('close')}</button><p class="overline">${a?'Edit':'New'} allocation</p><h2>Budget allocator</h2><label class="field"><span>Title</span><input name="name" required maxlength="60" placeholder="e.g. Emergency fund" value="${escC(a?.name||'')}"></label><label class="field"><span>Person or purpose (optional)</span><input name="person" maxlength="60" value="${escC(a?.person||'')}"></label><label class="field"><span>Target amount</span><input name="target" type="number" required min="0.01" step="0.01" value="${a?.target||''}"></label><label class="field"><span>Cycle</span><select name="cycle"><option value="monthly" ${a?.cycle!=='once'?'selected':''}>Every month</option><option value="once" ${a?.cycle==='once'?'selected':''}>One-time target</option></select></label><div class="detail-footer"><button class="primary-btn" type="submit">Save allocation</button>${a?`<button type="button" class="danger-action" data-allocation-remove="${escC(a.id)}">${svg('trash')} Delete allocation</button>`:''}</div></form>`;
   dialog.dataset.allocationId=a?.id||'';dialog.showModal();dialog.querySelector('[name="name"]').focus();
 }
 function contributionDialog(a){
@@ -74,7 +74,7 @@ document.addEventListener('click',event=>{
   if(contribute){const a=allocationActive().find(a=>a.id===contribute.dataset.allocationContribute);if(a)contributionDialog(a)}
   if(safe)safeSettingsDialog();
   if(checkin){const today=currentDay();if(state.transactions.some(t=>t.type==='expense'&&t.isoDate===today))return toastMsg('An expense is already recorded today');state.noSpendCheckins??=[];if(!state.noSpendCheckins.includes(today)){state.noSpendCheckins.push(today);save();render();toastMsg('No-spend day checked in')}}
-  if(remove){const id=remove.dataset.allocationRemove;state.allocations=allocationActive().filter(a=>a.id!==id);save();document.getElementById('allocationDialog')?.close();render();toastMsg('Plan removed; past transactions kept')}
+  if(remove){const allocation=allocationActive().find(a=>a.id===remove.dataset.allocationRemove);if(!allocation||!confirm(`Delete “${allocation.name}”? Past contribution transactions will be kept.`))return;state.allocations=allocationActive().filter(a=>a.id!==allocation.id);save();document.getElementById('allocationDialog')?.close();render();toastMsg('Allocation deleted; past transactions kept')}
   for(const [selector,id] of [['[data-close-allocation]','allocationDialog'],['[data-close-contribution]','contributionDialog'],['[data-close-safe]','safeSettingsDialog']])if(event.target.closest(selector))document.getElementById(id)?.close();
 });
 document.addEventListener('submit',event=>{

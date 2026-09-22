@@ -1,5 +1,5 @@
-const CACHE='cashual-v1.0.2';
-const ASSETS=['./','index.html','styles.css?v=1.0.2','app.js?v=1.0.2','enhancements.js?v=1.0.2','features.js?v=1.0.2','ui-polish.js?v=1.0.2','navigation-data.js?v=1.0.2','finish-polish.js?v=1.0.2','expenses-polish.js?v=1.0.2','interaction-polish.js?v=1.0.2','allocator.js?v=1.0.2','transaction-updates.js?v=1.0.2','theme-custom.js?v=1.0.2','manifest.webmanifest?v=1.0.2','cashual-mark.svg?v=1.0.2','cashual-icon-180.png?v=1.0.2','cashual-icon-192.png?v=1.0.2','cashual-icon-512.png?v=1.0.2'];
+const CACHE='cashual-v1.0.3';
+const ASSETS=['./','index.html','styles.css?v=1.0.3','app.js?v=1.0.3','enhancements.js?v=1.0.3','features.js?v=1.0.3','ui-polish.js?v=1.0.3','navigation-data.js?v=1.0.3','finish-polish.js?v=1.0.3','expenses-polish.js?v=1.0.3','interaction-polish.js?v=1.0.3','allocator.js?v=1.0.3','transaction-updates.js?v=1.0.3','theme-custom.js?v=1.0.3','manifest.webmanifest?v=1.0.3','cashual-mark.svg?v=1.0.3','cashual-icon-180.png?v=1.0.3','cashual-icon-192.png?v=1.0.3','cashual-icon-512.png?v=1.0.3'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
   self.skipWaiting();
