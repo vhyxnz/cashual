@@ -11,7 +11,9 @@ const walletCardBeforePolish=walletCard;
 walletCard=function(wallet){return walletCardBeforePolish(wallet)
   .replace('account-card compact-wallet','account-card')
   .replace(/<div class="swipe-back swipe-edit"[^>]*>[\s\S]*?<\/div>/,'')
-  .replace('<div class="wallet-card-actions" hidden>',`<div class="wallet-card-actions" hidden><button data-wallet-edit="${escC(wallet.id)}" aria-label="Edit ${escC(wallet.name)} wallet" title="Edit wallet">${svg('edit')}</button>`)};
+  .replace(/(<button data-wallet-privacy="[^"]+"[^>]*>)[\s\S]*?(<\/button>)/,`$1<svg class="ui-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" aria-hidden="true"><path d="M2 12s3.8-6 10-6 10 6 10 6-3.8 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="2.8"/></svg>$2`)
+  .replace(/(<button data-wallet-more="[^"]+"[^>]*>)[\s\S]*?(<\/button>)/,`$1<svg class="ui-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" aria-hidden="true"><circle cx="5" cy="12" r="1.2" fill="white"/><circle cx="12" cy="12" r="1.2" fill="white"/><circle cx="19" cy="12" r="1.2" fill="white"/></svg>$2`)
+  .replace('<div class="wallet-card-actions" hidden>',`<div class="wallet-card-actions" hidden><button data-wallet-edit="${escC(wallet.id)}" aria-label="Edit ${escC(wallet.name)} wallet" title="Edit wallet">${svg('edit')}<span>Edit</span></button>`)};
 const txRowsBeforePolish=txRows;
 txRows=function(items){return txRowsBeforePolish(items).replace(/<div class="swipe-back swipe-edit"[^>]*>[\s\S]*?<\/div>/g,'')};
 
@@ -32,23 +34,41 @@ entryForm.addEventListener('submit',()=>{
   }
 },true);
 
+let streakSubmissionPending=false;
+window.addEventListener('submit',event=>{
+  if(event.target===quickEntryForm||event.target===entryForm&&['expense','income','transfer'].includes(editRecord?.kind))streakSubmissionPending=true;
+},true);
+function markDailyActivity(){
+  const today=currentDay(),streak=state.streak;
+  if(!streak||streak.lastDay===today)return;
+  const gap=streak.lastDay?Math.round((new Date(today+'T12:00:00')-new Date(streak.lastDay+'T12:00:00'))/86400000):Infinity;
+  streak.count=gap===1?streak.count+1:1;
+  streak.best=Math.max(streak.best,streak.count);
+  streak.lastDay=today;
+  save();
+}
 function updateDailyStreak(){
   if(!cashualHydrated)return;
-  const today=currentDay(),streak=state.streak||{count:0,best:0,lastDay:''};
-  if(streak.lastDay===today)return;
-  const gap=streak.lastDay?Math.round((new Date(today+'T12:00:00')-new Date(streak.lastDay+'T12:00:00'))/86400000):Infinity;
-  streak.count=gap===1?(streak.count||0)+1:1;
-  streak.best=Math.max(streak.best||0,streak.count);
-  streak.lastDay=today;
-  state.streak=streak;
-  save();
+  const today=currentDay();
+  if(state.streak?.mode!=='activity'){
+    state.streak={mode:'activity',count:0,best:0,lastDay:'',recordCount:state.transactions.length};
+    save();return;
+  }
+  const streak=state.streak,recordCount=state.transactions.length;
+  let changed=false;
+  if(streak.lastDay&&streak.lastDay!==today&&Math.round((new Date(today+'T12:00:00')-new Date(streak.lastDay+'T12:00:00'))/86400000)>1&&streak.count){streak.count=0;changed=true}
+  if(recordCount>streak.recordCount&&streakSubmissionPending)markDailyActivity();
+  if(streak.recordCount!==recordCount){streak.recordCount=recordCount;changed=true}
+  streakSubmissionPending=false;
+  if(changed)save();
 }
 const homeBeforeStreak=home;
 home=function(){
   const content=homeBeforeStreak().replaceAll('<div class="event">','<div class="event home-bill-row">');
   if(state.homeSections?.streak===false)return content;
-  const streak=state.streak||{count:1,best:1};
-  return `<section class="card streak-card" aria-label="Daily check-in streak"><span class="streak-mark">${svg('flame')}</span><div><strong>${streak.count||1}-day streak</strong><small>Checked in today · Best ${streak.best||1} ${(streak.best||1)===1?'day':'days'}</small></div><span class="streak-done">${svg('check')}</span></section>`+content;
+  const streak=state.streak||{count:0,best:0};
+  const checked=streak.lastDay===currentDay();
+  return `<section class="card streak-card" aria-label="Daily activity streak"><span class="streak-mark">${svg('flame')}</span><div><strong>${streak.count?`${streak.count}-day streak`:'Start a streak'}</strong><small>${checked?'Activity recorded today':'Log an entry or review today'} · Best ${streak.best||0} ${(streak.best||0)===1?'day':'days'}</small></div>${checked?`<span class="streak-done" aria-label="Checked in">${svg('check')}</span>`:`<button class="streak-review" data-review-today>Review today</button>`}</section>`+content;
 };
 const moreBeforeStreak=more;
 more=function(){return moreBeforeStreak().replace('<summary>Home display</summary><div class="toggle-grid">',`<summary>Home display</summary><div class="toggle-grid"><label><input type="checkbox" data-home-toggle="streak" ${state.homeSections?.streak===false?'':'checked'}> Daily streak</label>`)};

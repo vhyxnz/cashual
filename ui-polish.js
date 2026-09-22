@@ -41,7 +41,7 @@ function iconForControl(button,label){
 }
 function polishControls(){
   for(const button of document.querySelectorAll('button')){
-    if(button.matches('.wallet-main,.profile-setting,.setting,.category-pill,.quick-category,.day,.data-action-row,.mobile-nav-choice,.expense-period,[data-wallet-privacy],[data-wallet-more],#themeBtn,#privacyBtn'))continue;
+    if(button.matches('.wallet-main,.profile-setting,.setting,.category-pill,.quick-category,.day,.data-action-row,.mobile-nav-choice,.expense-period,.wallet-card-actions button,.repeat-last,.streak-review,.detail-action,.reconcile-action,[data-wallet-privacy],[data-wallet-more],#themeBtn,#privacyBtn'))continue;
     const visibleText=button.textContent.trim().replace(/\s+/g,' ');
     const label=button.getAttribute('aria-label')||button.dataset.controlLabel||visibleText;
     const icon=iconForControl(button,label);

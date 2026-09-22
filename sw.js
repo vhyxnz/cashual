@@ -1,16 +1,17 @@
-const CACHE='cashual-v37';
-const ASSETS=['./','index.html','styles.css?v=37','app.js','enhancements.js?v=30','features.js?v=35','ui-polish.js?v=37','navigation-data.js?v=35','finish-polish.js?v=36','expenses-polish.js?v=37','manifest.webmanifest','cashual-mark.svg','cashual-icon-180.png','cashual-icon-192.png','cashual-icon-512.png'];
+const CACHE='cashual-v1.0.1';
+const ASSETS=['./','index.html','styles.css?v=1.0.1','app.js?v=1.0.1','enhancements.js?v=1.0.1','features.js?v=1.0.1','ui-polish.js?v=1.0.1','navigation-data.js?v=1.0.1','finish-polish.js?v=1.0.1','expenses-polish.js?v=1.0.1','interaction-polish.js?v=1.0.1','allocator.js?v=1.0.1','transaction-updates.js?v=1.0.1','theme-custom.js?v=1.0.1','manifest.webmanifest?v=1.0.1','cashual-mark.svg?v=1.0.1','cashual-icon-180.png?v=1.0.1','cashual-icon-192.png?v=1.0.1','cashual-icon-512.png?v=1.0.1'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
   self.skipWaiting();
 });
 self.addEventListener('activate',event=>{
-  event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));
+  event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('cashual-v')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));
 });
 self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET')return;
   event.respondWith(caches.match(event.request).then(cached=>cached||fetch(event.request).catch(()=>event.request.mode==='navigate'?caches.match('index.html'):Response.error())));
 });
+self.addEventListener('message',event=>{if(event.data?.type==='CASHUAL_SKIP_WAITING')self.skipWaiting()});
 self.addEventListener('sync',event=>{
   if(event.tag!=='cashual-refresh')return;
   event.waitUntil(new Promise((resolve,reject)=>{

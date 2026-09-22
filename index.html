@@ -8,17 +8,17 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="description" content="Cashual is a private, local-first money tracker for wallets, spending, bills, budgets, and goals." />
   <title>Cashual — Money, made casual</title>
-  <link rel="manifest" href="manifest.webmanifest?v=31" />
-  <link rel="icon" type="image/svg+xml" href="cashual-mark.svg" />
-  <link rel="apple-touch-icon" sizes="180x180" href="cashual-icon-180.png" />
-  <link rel="stylesheet" href="styles.css?v=37" />
+  <link rel="manifest" href="manifest.webmanifest?v=1.0.1" />
+  <link rel="icon" type="image/svg+xml" href="cashual-mark.svg?v=1.0.1" />
+  <link rel="apple-touch-icon" sizes="180x180" href="cashual-icon-180.png?v=1.0.1" />
+  <link rel="stylesheet" href="styles.css?v=1.0.1" />
 </head>
 <body>
   <div class="app-shell">
     <aside class="rail" aria-label="Primary navigation">
       <a class="brand" href="#home" aria-label="Cashual home"><img class="brand-logo" src="cashual-mark.svg" alt=""><span>cashual</span></a>
       <nav id="desktopNav"></nav>
-      <div class="rail-foot"><button class="privacy" id="themeBtn" aria-pressed="false"><span id="themeIcon"></span> Dark mode</button><button class="privacy" id="privacyBtn" aria-pressed="false"><span id="privacyIcon"></span> Hide balances</button><div class="profile"><span id="profileInitials">—</span><div><strong id="profileName">Your profile</strong><small>Local profile</small></div></div></div>
+      <div class="rail-foot"><button class="privacy" id="themeBtn" aria-pressed="false"><span id="themeIcon"></span> Dark mode</button><button class="privacy" id="privacyBtn" aria-pressed="false"><span id="privacyIcon"></span> Hide balances</button><div class="profile"><span id="profileInitials">C</span><div><strong id="profileName">Your profile</strong><small>Local profile</small></div></div></div>
     </aside>
 
     <main>
@@ -46,12 +46,16 @@
   <dialog id="formDialog" class="form-dialog"><form id="entryForm"><button class="close" type="button" data-close aria-label="Close">×</button><p class="overline" id="formOverline">New expense</p><h2 id="formTitle">Where did it go?</h2><div id="formFields"></div><div class="form-actions"><button type="button" class="ghost-btn" data-close>Cancel</button><button type="submit" class="primary-btn" id="saveBtn">Save expense</button></div></form></dialog>
   <dialog id="profileDialog" class="profile-dialog"><form id="profileForm"><div class="welcome-mark"><img src="cashual-mark.svg" alt="Cashual logo"></div><p class="overline" id="profileOverline">Welcome to Cashual</p><h2 id="profileTitle">Let’s make it yours.</h2><p class="dialog-copy">Your details stay on this device. Salary is optional and helps personalize your overview.</p><div class="form-grid"><div class="field full"><label for="userName">What should we call you?</label><input id="userName" name="userName" required autocomplete="name" placeholder="Your name"></div><div class="field full"><label for="monthlySalary">Monthly salary <small>(optional)</small></label><div class="money-input"><span>₱</span><input id="monthlySalary" name="monthlySalary" type="number" min="0" step=".01" placeholder="0.00"></div></div></div><div class="form-actions"><button type="button" class="ghost-btn" id="cancelProfile">Cancel</button><button type="submit" class="primary-btn">Save profile</button></div></form></dialog>
   <div id="toast" role="status"></div>
-  <script src="app.js"></script>
-  <script src="enhancements.js?v=30"></script>
-  <script src="features.js?v=35"></script>
-  <script src="ui-polish.js?v=37"></script>
-  <script src="navigation-data.js?v=35"></script>
-  <script src="finish-polish.js?v=36"></script>
-  <script src="expenses-polish.js?v=37"></script>
+  <script src="app.js?v=1.0.1"></script>
+  <script src="enhancements.js?v=1.0.1"></script>
+  <script src="features.js?v=1.0.1"></script>
+  <script src="ui-polish.js?v=1.0.1"></script>
+  <script src="navigation-data.js?v=1.0.1"></script>
+  <script src="finish-polish.js?v=1.0.1"></script>
+  <script src="expenses-polish.js?v=1.0.1"></script>
+  <script src="interaction-polish.js?v=1.0.1"></script>
+  <script src="allocator.js?v=1.0.1"></script>
+  <script src="transaction-updates.js?v=1.0.1"></script>
+  <script src="theme-custom.js?v=1.0.1"></script>
 </body>
 </html>
