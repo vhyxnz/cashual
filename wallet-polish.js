@@ -50,9 +50,10 @@
           <span class="wallet-identifier">${escC(maskedIdentifier(wallet))}</span>
           <strong class="wallet-amount money ${hidden?'card-hidden':''}">${hidden?'••••••':cash(wallet.balance)}</strong>
           <span class="wallet-trend ${activity.net>0?'up':activity.net<0?'down':''}">${escC(trend)}</span>
-          <span class="wallet-ring" aria-label="${spentPercent}% of this month's wallet activity is spending"><span>${spentPercent}%</span></span>
+          <span class="wallet-ring" title="Monthly spending share: ${spentPercent}%" aria-label="Monthly spending share: ${spentPercent}%"><span><b>${spentPercent}%</b><small>spent</small></span></span>
         </button>
         <div class="wallet-card-tools">
+          ${wallet.qr?`<button data-wallet-qr-shortcut="${escC(wallet.id)}" aria-label="Show QR code for ${escC(wallet.name)}" title="Show QR code">${svg('qr')}</button>`:''}
           <button data-wallet-privacy="${escC(wallet.id)}" aria-label="${hidden?'Show':'Hide'} ${escC(wallet.name)} balance" title="${hidden?'Show':'Hide'} balance">${svg('eye')}</button>
           <button data-wallet-more="${escC(wallet.id)}" aria-label="More actions for ${escC(wallet.name)}" title="More actions">${svg('more')}</button>
         </div>
@@ -115,14 +116,62 @@
     const [wallet]=state.wallets.splice(from,1);if(from<to)to--;state.wallets.splice(to,0,wallet);save();render();toastMsg('Wallet order updated');
   }
 
+  function showWalletQr(wallet){
+    let dialog=document.getElementById('walletQrPopup');
+    if(!dialog){
+      document.body.insertAdjacentHTML('beforeend',`<dialog id="walletQrPopup" class="wallet-qr-popup"><div><button type="button" class="close" data-wallet-qr-close aria-label="Close QR code">×</button><p class="overline">Wallet QR code</p><h2 id="walletQrTitle"></h2><div class="wallet-qr-frame"><img id="walletQrImage" alt=""></div><p class="wallet-qr-hint">Present this code when receiving money.</p></div></dialog>`);
+      dialog=document.getElementById('walletQrPopup');
+    }
+    const image=dialog.querySelector('#walletQrImage'),title=dialog.querySelector('#walletQrTitle');title.textContent=wallet.name;image.src=wallet.qr;image.alt=`QR code for ${wallet.name}`;dialog.showModal();
+  }
+
+  const qrCropData=new Map(),fileDataBeforeQrCrop=fileData;
+  const fileKey=file=>file&&`${file.name}:${file.size}:${file.lastModified}`;
+  fileData=async file=>qrCropData.get(fileKey(file))||fileDataBeforeQrCrop(file);
+  let qrCropSession=null;
+  function ensureQrCropDialog(){
+    let dialog=document.getElementById('qrCropDialog');if(dialog)return dialog;
+    document.body.insertAdjacentHTML('beforeend',`<dialog id="qrCropDialog" class="qr-crop-dialog"><div><button type="button" class="close" data-qr-crop-cancel aria-label="Close crop editor">×</button><p class="overline">QR image</p><h2>Crop your QR code</h2><p class="qr-crop-copy">Keep the full code and its quiet border inside the square.</p><canvas id="qrCropCanvas" width="640" height="640"></canvas><div class="qr-crop-controls"><label><span>Zoom</span><input name="qrCropZoom" type="range" min="1" max="3" step="0.01" value="1"></label><label><span>Left / right</span><input name="qrCropX" type="range" min="-100" max="100" step="1" value="0"></label><label><span>Up / down</span><input name="qrCropY" type="range" min="-100" max="100" step="1" value="0"></label></div><div class="form-actions"><button type="button" class="ghost-btn" data-qr-use-full>Use full image</button><button type="button" class="primary-btn" data-qr-crop-apply>Apply crop</button></div></div></dialog>`);
+    return document.getElementById('qrCropDialog');
+  }
+  function drawQrCrop(){
+    if(!qrCropSession)return;const {dialog,image}=qrCropSession,canvas=dialog.querySelector('#qrCropCanvas'),context=canvas.getContext('2d'),size=canvas.width;
+    const zoom=+dialog.querySelector('[name="qrCropZoom"]').value,x=+dialog.querySelector('[name="qrCropX"]').value/100,y=+dialog.querySelector('[name="qrCropY"]').value/100;
+    const scale=Math.max(size/image.naturalWidth,size/image.naturalHeight)*zoom,width=image.naturalWidth*scale,height=image.naturalHeight*scale;
+    const overflowX=Math.max(0,(width-size)/2),overflowY=Math.max(0,(height-size)/2),left=(size-width)/2-x*overflowX,top=(size-height)/2-y*overflowY;
+    context.fillStyle='#fff';context.fillRect(0,0,size,size);context.imageSmoothingEnabled=true;context.imageSmoothingQuality='high';context.drawImage(image,left,top,width,height);
+  }
+  function openQrCrop(input,file){
+    const reader=new FileReader();reader.onload=()=>{const image=new Image();image.onload=()=>{const dialog=ensureQrCropDialog();dialog.querySelectorAll('input[type="range"]').forEach(control=>control.value=control.name==='qrCropZoom'?'1':'0');qrCropSession={dialog,image,input,file};drawQrCrop();dialog.showModal()};image.src=reader.result};reader.readAsDataURL(file);
+  }
+  function closeQrCrop(clear=false){if(!qrCropSession)return;if(clear)qrCropSession.input.value='';qrCropSession.dialog.close();qrCropSession=null}
+
+  document.addEventListener('change',event=>{
+    if(event.target.matches('input[name="qr"][type="file"]')&&event.target.files?.[0])openQrCrop(event.target,event.target.files[0]);
+    if(event.target.closest?.('.qr-crop-dialog')&&event.target.matches('input[type="range"]'))drawQrCrop();
+  });
+  document.addEventListener('input',event=>{if(event.target.closest?.('.qr-crop-dialog')&&event.target.matches('input[type="range"]'))drawQrCrop()});
   document.addEventListener('click',event=>{
-    const remove=event.target.closest('[data-wallet-delete]'),qr=event.target.closest('[data-wallet-qr]'),move=event.target.closest('[data-wallet-move]');
+    const cancel=event.target.closest('[data-qr-crop-cancel]'),full=event.target.closest('[data-qr-use-full]'),apply=event.target.closest('[data-qr-crop-apply]');if(!cancel&&!full&&!apply)return;
+    event.preventDefault();
+    if(cancel)return closeQrCrop(true);
+    if(full)return closeQrCrop(false);
+    if(!qrCropSession)return;
+    const {dialog,input,file}=qrCropSession,data=dialog.querySelector('#qrCropCanvas').toDataURL('image/png'),binary=atob(data.split(',')[1]),bytes=new Uint8Array(binary.length);for(let index=0;index<binary.length;index++)bytes[index]=binary.charCodeAt(index);
+    const cropped=new File([bytes],`${file.name.replace(/\.[^.]+$/,'')||'wallet-qr'}-cropped.png`,{type:'image/png',lastModified:Date.now()});qrCropData.set(fileKey(cropped),data);qrCropData.set(fileKey(file),data);
+    try{const transfer=new DataTransfer();transfer.items.add(cropped);input.files=transfer.files}catch{}
+    input.closest('.field')?.classList.add('qr-crop-ready');closeQrCrop(false);toastMsg('QR crop ready');
+  });
+
+  document.addEventListener('click',event=>{
+    const remove=event.target.closest('[data-wallet-delete]'),qr=event.target.closest('[data-wallet-qr],[data-wallet-qr-shortcut]'),move=event.target.closest('[data-wallet-move]'),closeQr=event.target.closest('[data-wallet-qr-close]');
+    if(closeQr){event.preventDefault();document.getElementById('walletQrPopup')?.close();return}
     if(!remove&&!qr&&!move){if(!event.target.closest('[data-wallet-more],.wallet-card-actions'))document.querySelectorAll('.wallet-card-actions:not([hidden])').forEach(menu=>menu.hidden=true);return}
     event.preventDefault();event.stopImmediatePropagation();
     if(move)return moveWallet(move.dataset.walletId,move.dataset.walletMove);
     const id=remove?.dataset.walletDelete||qr?.dataset.walletQr,wallet=state.wallets.find(item=>item.id===id);if(!wallet)return;
     if(qr){
-      if(wallet.qr){selectedWallet=wallet.id;location.hash='wallet-detail';render();setTimeout(()=>document.querySelector('.qr-card')?.scrollIntoView({behavior:'smooth',block:'center'}),80)}
+      if(wallet.qr)showWalletQr(wallet)
       else{enhanceForm('wallet',wallet.id);toastMsg('Choose a QR code image in wallet settings')}
       return;
     }
