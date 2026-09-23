@@ -19,6 +19,8 @@ function cashualIconSvg(color){
 let cashualManifestUrl='';
 function applyCashualIcon(){
   const color=validAppColor(state.appIconColor)?state.appIconColor:'#1c3c30',svgText=cashualIconSvg(color),url=`data:image/svg+xml,${encodeURIComponent(svgText)}`;
+  const deep=mixAppColor(color,'#000000',.38),ink=iconInk(color),accent=validAppColor(state.appAccent)?state.appAccent:'#d7f36a',root=document.documentElement;
+  root.style.setProperty('--logo-surface',color);root.style.setProperty('--logo-deep',deep);root.style.setProperty('--logo-ink',ink);root.style.setProperty('--logo-accent',accent);
   document.querySelectorAll('.brand-logo,.mobile-brand-logo,.welcome-mark img').forEach(image=>image.src=url);
   const favicon=document.querySelector('link[rel="icon"]');if(favicon)favicon.href=url;
   const appRoot=new URL('./',location.href).href;
