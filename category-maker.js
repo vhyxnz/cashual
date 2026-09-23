@@ -51,9 +51,10 @@ enhanceForm=function(kind,id=''){
 };
 document.addEventListener('click',event=>{
   const option=event.target.closest('[data-category-icon]');if(!option)return;
+  event.preventDefault();event.stopImmediatePropagation();
   const maker=option.closest('.category-maker');maker.querySelector('[name="icon"]').value=option.dataset.categoryIcon;
   maker.querySelectorAll('[data-category-icon]').forEach(button=>{const active=button===option;button.classList.toggle('selected',active);button.setAttribute('aria-pressed',String(active))});
-});
+},true);
 document.addEventListener('change',event=>{
   if(!event.target.matches('.category-maker [name="group"]'))return;
   const maker=event.target.closest('.category-maker'),select=maker.querySelector('[name="parent"]'),id=editRecord?.id||'',group=event.target.value;
