@@ -1,5 +1,5 @@
 /* Allocations, lightweight challenges, and a transparent daily spending guide. */
-const CASHUAL_APP_VERSION='1.0.9';
+const CASHUAL_APP_VERSION='1.1.0';
 const allocationMonth=()=>currentDay().slice(0,7);
 const allocationActive=()=>state.allocations||[];
 const allocationPaid=(allocation,month=allocationMonth())=>state.transactions.filter(tx=>tx.allocationId===allocation.id&&(allocation.cycle==='once'||tx.isoDate?.startsWith(month))&&!tx.transferId).reduce((sum,tx)=>sum+Math.abs(+tx.amount||0),0);

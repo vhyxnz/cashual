@@ -1,5 +1,5 @@
-const CACHE='cashual-v1.0.9';
-const ASSETS=['./','index.html','styles.css?v=1.0.9','app.js?v=1.0.9','enhancements.js?v=1.0.9','features.js?v=1.0.9','ui-polish.js?v=1.0.9','navigation-data.js?v=1.0.9','finish-polish.js?v=1.0.9','expenses-polish.js?v=1.0.9','interaction-polish.js?v=1.0.9','allocator.js?v=1.0.9','transaction-updates.js?v=1.0.9','theme-custom.js?v=1.0.9','category-maker.js?v=1.0.9','settings-editor.js?v=1.0.9','manifest.webmanifest?v=1.0.9','cashual-mark.svg?v=1.0.9','cashual-icon-180.png?v=1.0.9','cashual-icon-192.png?v=1.0.9','cashual-icon-512.png?v=1.0.9'];
+const CACHE='cashual-v1.1.0';
+const ASSETS=['./','index.html','styles.css?v=1.1.0','app.js?v=1.1.0','enhancements.js?v=1.1.0','features.js?v=1.1.0','ui-polish.js?v=1.1.0','navigation-data.js?v=1.1.0','finish-polish.js?v=1.1.0','expenses-polish.js?v=1.1.0','interaction-polish.js?v=1.1.0','allocator.js?v=1.1.0','transaction-updates.js?v=1.1.0','theme-custom.js?v=1.1.0','category-maker.js?v=1.1.0','settings-editor.js?v=1.1.0','wallet-polish.js?v=1.1.0','manifest.webmanifest?v=1.1.0','cashual-mark.svg?v=1.1.0','cashual-icon-180.png?v=1.1.0','cashual-icon-192.png?v=1.1.0','cashual-icon-512.png?v=1.1.0'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
   self.skipWaiting();
