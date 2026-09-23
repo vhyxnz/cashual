@@ -169,7 +169,7 @@
     if(!remove&&!qr&&!move){if(!event.target.closest('[data-wallet-more],.wallet-card-actions'))document.querySelectorAll('.wallet-card-actions:not([hidden])').forEach(menu=>menu.hidden=true);return}
     event.preventDefault();event.stopImmediatePropagation();
     if(move)return moveWallet(move.dataset.walletId,move.dataset.walletMove);
-    const id=remove?.dataset.walletDelete||qr?.dataset.walletQr,wallet=state.wallets.find(item=>item.id===id);if(!wallet)return;
+    const id=remove?.dataset.walletDelete||qr?.dataset.walletQr||qr?.dataset.walletQrShortcut,wallet=state.wallets.find(item=>item.id===id);if(!wallet)return;
     if(qr){
       if(wallet.qr)showWalletQr(wallet)
       else{enhanceForm('wallet',wallet.id);toastMsg('Choose a QR code image in wallet settings')}
