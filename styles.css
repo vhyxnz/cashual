@@ -233,8 +233,8 @@ button.icon-only>.ui-icon,button.icon-only>svg,.home-section .card-head button.i
   .mobile-nav{left:10px;right:10px;bottom:max(8px,env(safe-area-inset-bottom));width:auto;min-height:72px;padding:9px 8px;border:1px solid color-mix(in srgb,var(--line) 82%,transparent);border-radius:24px;background:color-mix(in srgb,var(--card) 94%,transparent);box-shadow:0 12px 38px rgba(20,28,18,.18);overflow:visible}
   .mobile-nav-choice{min-height:54px;border-radius:16px}
   .mobile-nav-choice.active{background:transparent;color:var(--lime2)}
-  .mobile-nav-add{position:relative;align-self:flex-start;transform:translateY(-25px);width:64px;height:64px;min-width:64px;border:6px solid var(--card);border-radius:50%;display:grid;place-items:center;background:var(--lime);color:var(--accent-ink,#172015);box-shadow:0 9px 22px rgba(20,28,18,.25)}
-  .mobile-nav-add .ui-icon{width:29px;height:29px;stroke-width:1.7}
+  .mobile-nav-add{position:relative;align-self:flex-start;transform:translateY(-25px);width:64px;height:64px;min-width:64px;padding:0;border:6px solid var(--card);border-radius:50%;display:block;background:var(--lime);color:var(--accent-ink,#172015);box-shadow:0 9px 22px rgba(20,28,18,.25)}
+  .mobile-nav-add .ui-icon{position:absolute!important;left:50%!important;top:50%!important;width:29px;height:29px;margin:0!important;transform:translate(-50%,-50%)!important;stroke-width:1.7}
   .mobile-nav-drawer{bottom:calc(100% + 12px);grid-template-columns:repeat(3,minmax(0,1fr))}
   #budgetAllocator{scroll-margin-top:16px}
   .fab{display:none!important}
@@ -248,3 +248,42 @@ button.icon-only>.ui-icon,button.icon-only>svg,.home-section .card-head button.i
 
 /* Every formerly green-tinted surface follows the selected accent. */
 .balance-card:after{border-color:color-mix(in srgb,var(--lime2) 18%,transparent)}.positive{color:var(--lime2)!important}.insight{background:color-mix(in srgb,var(--lime) 15%,var(--card))}.day.heat1{background:color-mix(in srgb,var(--lime) 12%,var(--card))}.day.heat2{background:color-mix(in srgb,var(--lime) 25%,var(--card))}.day.heat3{background:color-mix(in srgb,var(--lime) 45%,var(--card))}.streak-card{background:linear-gradient(110deg,var(--card),color-mix(in srgb,var(--lime) 12%,var(--card)))!important}.streak-mark,.streak-done,.challenge-card.earned .challenge-icon{background:color-mix(in srgb,var(--lime) 22%,var(--card));color:var(--lime2)}[data-theme="dark"] .home-shortcuts button{background:var(--card);color:var(--ink)}[data-theme="dark"] .streak-card{background:linear-gradient(110deg,var(--card),color-mix(in srgb,var(--lime) 12%,var(--card)))!important}[data-theme="dark"] .streak-mark,[data-theme="dark"] .streak-done,[data-theme="dark"] .challenge-card.earned .challenge-icon{background:color-mix(in srgb,var(--lime) 20%,var(--card));color:var(--lime2)}[data-theme="dark"] .safe-spend-card{background:linear-gradient(125deg,var(--card),color-mix(in srgb,var(--lime) 8%,var(--paper)))}[data-theme="dark"] .day.heat1{background:color-mix(in srgb,var(--lime) 10%,var(--card))}[data-theme="dark"] .day.heat2{background:color-mix(in srgb,var(--lime) 22%,var(--card))}[data-theme="dark"] .day.heat3{background:color-mix(in srgb,var(--lime) 38%,var(--card))}[data-theme="dark"] .insight{background:color-mix(in srgb,var(--lime) 12%,var(--card));color:var(--ink)}[data-theme="dark"] .expense-period.active{background:var(--lime);color:var(--accent-ink,#172015)}
+
+/* Dark mode surfaces must inherit the user's palette instead of the legacy olive theme. */
+[data-theme="dark"] body{background-image:radial-gradient(circle,color-mix(in srgb,var(--lime) 7%,transparent) .55px,transparent .8px),radial-gradient(circle at 14% 0%,color-mix(in srgb,var(--lime) 9%,transparent),transparent 42%)}
+[data-theme="dark"] .rail{background:color-mix(in srgb,var(--paper) 92%,#000)}
+[data-theme="dark"] .card,
+[data-theme="dark"] .icon-btn,
+[data-theme="dark"] .search,
+[data-theme="dark"] .chip,
+[data-theme="dark"] dialog,
+[data-theme="dark"] .quick-grid button,
+[data-theme="dark"] .field input,
+[data-theme="dark"] .field select,
+[data-theme="dark"] .field textarea,
+[data-theme="dark"] .category-pill,
+[data-theme="dark"] .expense-search,
+[data-theme="dark"] .expense-type,
+[data-theme="dark"] .split-row select,
+[data-theme="dark"] .split-row input,
+[data-theme="dark"] .split-row button,
+[data-theme="dark"] .theme-preset,
+[data-theme="dark"] .custom-theme-picker,
+[data-theme="dark"] .category-kind span,
+[data-theme="dark"] .category-icon-option,
+[data-theme="dark"] .category-color input,
+[data-theme="dark"] .settings-row>summary>span,
+[data-theme="dark"] .color-choice,
+[data-theme="dark"] .inline-color{background:var(--card);color:var(--ink)}
+[data-theme="dark"] .ghost-btn,
+[data-theme="dark"] .tx-icon,
+[data-theme="dark"] .settings-icon,
+[data-theme="dark"] .modal-close,
+[data-theme="dark"] .check{background:color-mix(in srgb,var(--lime) 8%,var(--card));color:var(--ink)}
+[data-theme="dark"] .toggle-grid label,
+[data-theme="dark"] .split-editor,
+[data-theme="dark"] .transaction-row .tx-edit{background:var(--paper);color:var(--ink)}
+[data-theme="dark"] .expense-overview{background:linear-gradient(110deg,var(--card),color-mix(in srgb,var(--lime) 7%,var(--paper)))}
+[data-theme="dark"] .mobile-nav{background:color-mix(in srgb,var(--card) 94%,transparent)}
+[data-theme="dark"] .mobile-nav-choice.active{background:color-mix(in srgb,var(--lime) 11%,var(--card));color:var(--lime2)}
+[data-theme="dark"] .mobile-nav-drawer{background:var(--card)}
