@@ -72,22 +72,25 @@ const walletViewBeforeInterest = walletView;
 walletView = function(){
   const w=state.wallets.find(x=>x.id===selectedWallet), html=walletViewBeforeInterest();
   if(!w)return html;
-  const interest=w.interest;
-  const panel=`<div class="card interest-panel home-section"><div><h2>Wallet interest</h2><p>${interest?.enabled?`${escC(interest.rate)}% ${escC(interest.frequency)} · next credit ${escC(nextInterestDate(interest.lastApplied,interest.frequency))}`:'No automatic interest set'}</p></div><button class="ghost-btn" data-interest-wallet="${escC(w.id)}">${interest?'Edit interest':'Add interest'}</button></div>`;
+  const interest=w.interest,ratePeriod=interest?.ratePeriod||interest?.frequency||'monthly',creditFrequency=interest?.creditFrequency||interest?.frequency||'monthly';
+  const panel=`<div class="card interest-panel home-section"><div><h2>Wallet interest</h2><p>${interest?.enabled?`${escC(interest.rate)}% per ${escC(ratePeriod)} · credited ${escC(creditFrequency)} · next credit ${escC(nextInterestDate(interest.lastApplied,creditFrequency))}`:'No automatic interest set'}</p></div><button class="ghost-btn" data-interest-wallet="${escC(w.id)}">${interest?'Edit interest':'Add interest'}</button></div>`;
   return html.replace('<button class="ghost-btn" data-open="transfer">Transfer</button>',cashualIconButton('transfer','Transfer from this wallet',svg('transfer')))
     .replace('<div class="card transactions home-section">',panel+'<div class="card transactions home-section">');
 };
 const settingsBeforeLayout=more;
 more=function(){return settingsBeforeLayout().replace(/<details class="card settings-block" open><summary>Wallet display<\/summary>[\s\S]*?<\/details>/,`<details class="card settings-block" open><summary>Wallet display</summary><div class="toggle-grid"><label><input type="radio" name="walletLayout" value="grid" ${state.walletLayout==='grid'?'checked':''}> Grid cards</label><label><input type="radio" name="walletLayout" value="line" ${state.walletLayout==='line'?'checked':''}> Compact lines</label></div></details>`)};
 function nextInterestDate(last,frequency){const d=new Date((last||currentDay())+'T12:00:00');if(Number.isNaN(+d))return currentDay();const day=d.getDate();if(frequency==='weekly')d.setDate(day+7);else if(frequency==='monthly'){d.setDate(1);d.setMonth(d.getMonth()+1);d.setDate(Math.min(day,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()))}else if(frequency==='yearly'){d.setDate(1);d.setFullYear(d.getFullYear()+1);d.setDate(Math.min(day,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()))}else d.setDate(day+1);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
-function applyWalletInterest(){let changed=false,today=currentDay();for(const w of state.wallets){const i=w.interest;if(!i?.enabled||!Number.isFinite(+i.rate)||+i.rate<=0)continue;let due=nextInterestDate(i.lastApplied,i.frequency),count=0;while(due<=today&&count++<366){const amount=Math.round(Math.max(0,+w.balance)*(+i.rate/100)*100)/100;if(amount>0){w.balance+=amount;state.transactions.unshift({id:crypto.randomUUID(),type:'income',title:'Wallet interest',amount,walletId:w.id,wallet:w.name,categoryId:'income-interest',category:'Interest',isoDate:due,time:'12:00',note:`${i.rate}% ${i.frequency} interest`})}i.lastApplied=due;changed=true;due=nextInterestDate(due,i.frequency)}}if(changed){save();render()}}
+function interestPeriodDays(period,dateString){const d=new Date((dateString||currentDay())+'T12:00:00');if(period==='daily')return 1;if(period==='weekly')return 7;if(period==='yearly')return new Date(d.getFullYear(),1,29).getMonth()===1?366:365;return new Date(d.getFullYear(),d.getMonth()+1,0).getDate()}
+function interestCreditRate(rate,ratePeriod,creditFrequency,dateString){const periodDays=interestPeriodDays(ratePeriod,dateString),creditDays=interestPeriodDays(creditFrequency,dateString);return Math.pow(1+(+rate/100),creditDays/periodDays)-1}
+function applyWalletInterest(){let changed=false,today=currentDay();for(const w of state.wallets){const i=w.interest;if(!i?.enabled||!Number.isFinite(+i.rate)||+i.rate<=0)continue;const ratePeriod=i.ratePeriod||i.frequency||'monthly',creditFrequency=i.creditFrequency||i.frequency||'monthly';i.ratePeriod=ratePeriod;i.creditFrequency=creditFrequency;i.frequency=creditFrequency;let due=nextInterestDate(i.lastApplied,creditFrequency),count=0;while(due<=today&&count++<3660){const creditRate=interestCreditRate(i.rate,ratePeriod,creditFrequency,due),amount=Math.round(Math.max(0,+w.balance)*creditRate*100)/100;if(amount>0){w.balance+=amount;state.transactions.unshift({id:crypto.randomUUID(),type:'income',title:'Wallet interest',amount,walletId:w.id,wallet:w.name,categoryId:'income-interest',category:'Interest',isoDate:due,time:'12:00',note:`${i.rate}% per ${ratePeriod}, credited ${creditFrequency}`})}i.lastApplied=due;changed=true;due=nextInterestDate(due,creditFrequency)}}if(changed){save();render()}}
 const interestBaseForm=enhanceForm;
 enhanceForm=function(kind,id=''){
   if(kind==='interest'){
     const w=state.wallets.find(x=>x.id===id);if(!w)return;
     if(quickDialog.open)quickDialog.close();editRecord={kind,id};formDialog.dataset.kind=kind;formOverline.textContent='Wallet';formTitle.textContent=`Interest · ${w.name}`;saveBtn.textContent='Save interest';
     const i=w.interest||{};
-    formFields.innerHTML=`<div class="form-grid compact-form">${field('Interest per period (%)','rate','number',i.rate??0,'required min="0" max="100" step="0.001"')}${select('Frequency','frequency',[['daily','Daily'],['weekly','Weekly'],['monthly','Monthly'],['yearly','Yearly']],i.frequency||'monthly')}<label class="field check-field full"><input name="enabled" type="checkbox" ${i.enabled?'checked':''}> Enable automatic interest</label><p class="form-hint full">Credits compound on the wallet balance when Cashual is opened after each due date. This is a percentage per selected period, not an annualized rate.</p></div>`;
+    const ratePeriod=i.ratePeriod||i.frequency||'monthly',creditFrequency=i.creditFrequency||i.frequency||'monthly',periods=[['daily','Day'],['weekly','Week'],['monthly','Month'],['yearly','Year']],creditPeriods=[['daily','Daily'],['weekly','Weekly'],['monthly','Monthly'],['yearly','Yearly']];
+    formFields.innerHTML=`<div class="form-grid compact-form">${field('Interest rate (%)','rate','number',i.rate??0,'required min="0" max="100" step="0.001"')}${select('Rate applies per','ratePeriod',periods,ratePeriod)}${select('Interest is credited','creditFrequency',creditPeriods,creditFrequency)}<label class="field check-field full"><input name="enabled" type="checkbox" ${i.enabled?'checked':''}> Enable automatic interest</label><p class="form-hint full">Example: choose 3.75%, Month, and Daily for a 3.75% monthly rate paid into the wallet each day. Cashual converts it to an equivalent compounded credit rate.</p></div>`;
     formDialog.showModal();return;
   }
   interestBaseForm(kind,id);
@@ -101,8 +104,9 @@ entryForm.onsubmit=async e=>{
   if(editRecord?.kind==='interest'){
     e.preventDefault();const w=state.wallets.find(x=>x.id===editRecord.id),d=Object.fromEntries(new FormData(entryForm)),rate=+d.rate;
     if(!w||!Number.isFinite(rate)||rate<0||rate>100)return toastMsg('Enter a rate from 0 to 100%');
-    const old=w.interest,enabled=!!d.enabled;
-    w.interest={rate,frequency:d.frequency,enabled,lastApplied:old?.enabled&&enabled&&old.frequency===d.frequency?old.lastApplied:currentDay()};
+    const old=w.interest,enabled=!!d.enabled,ratePeriod=d.ratePeriod||'monthly',creditFrequency=d.creditFrequency||'monthly',oldRatePeriod=old?.ratePeriod||old?.frequency||'monthly',oldCreditFrequency=old?.creditFrequency||old?.frequency||'monthly';
+    const scheduleUnchanged=old?.enabled&&enabled&&oldRatePeriod===ratePeriod&&oldCreditFrequency===creditFrequency&&+old.rate===rate;
+    w.interest={rate,ratePeriod,creditFrequency,frequency:creditFrequency,enabled,lastApplied:scheduleUnchanged?old.lastApplied:currentDay()};
     save();editRecord=null;formDialog.close();render();toastMsg('Interest settings saved');return;
   }
   if(editRecord?.kind==='loan'){
