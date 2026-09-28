@@ -207,6 +207,6 @@
   render=function(){renderBeforeWalletPolish();setupWalletCarousels();applyHomeCardOrder()};
   const homeBeforeSweldo=home;
   home=function(){return homeBeforeSweldo().replace('</div></article></section>',`<button class="icon-only" data-sweldo-shortcut aria-label="Open Sweldo salary app" title="Open Sweldo">${svg('sweldo')}</button></div></article></section>`)};
-  document.addEventListener('click',event=>{const button=event.target.closest('[data-sweldo-shortcut]');if(!button)return;event.preventDefault();const link=document.createElement('a');link.href='https://vhyxnz.github.io/Sweldo/';link.target='_blank';link.rel='noopener external';link.click()});
+  document.addEventListener('click',event=>{const button=event.target.closest('[data-sweldo-shortcut]');if(!button)return;event.preventDefault();window.location.assign('https://vhyxnz.github.io/Sweldo/?source=cashual')});
   render();
 })();
