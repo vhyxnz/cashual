@@ -3,7 +3,7 @@
   Object.assign(icons,{
     qr:'<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M15 14h2v2h-2zm3 3h2v3h-3m-3-2v2"/>',
     up:'<path d="m6 14 6-6 6 6"/>',down:'<path d="m6 10 6 6 6-6"/>',
-    sweldo:'<rect x="4" y="3" width="16" height="18" rx="4"/><path d="M8 8h8M8 12h5m-5 4h8M12 6v12"/>'
+    sweldo:'<path fill="currentColor" stroke="none" d="M18.4 5.4A12.8 12.8 0 0 0 12 3.7c-4.2 0-7 2.1-7 5.3 0 3 2.3 4.3 6.2 5.3 2.7.7 3.8 1.3 3.8 2.5 0 1.1-1.2 1.9-3.1 1.9-2.5 0-4.9-1-6.7-2.5l-2.3 3.1a13.7 13.7 0 0 0 9 3.1c4.6 0 7.7-2.2 7.7-5.7 0-3.1-2.3-4.6-6.7-5.7-2.7-.7-3.6-1.2-3.6-2.3 0-1 1.1-1.7 2.9-1.7 2 0 4 .7 5.7 1.8z"/><circle cx="20.5" cy="19.2" r="1.8" fill="#145cff" stroke="none"/>'
   });
   state.walletPrivacy??={};
   state.walletLayout||='grid';
@@ -194,10 +194,19 @@
       collection.addEventListener('scroll',update,{passive:true});update();
     });
   }
+  const homeCardDefinitions=[['streak','Daily streak'],['summary','Balance & shortcuts'],['cashflow','Monthly cash flow'],['spending','Expenses by category'],['activity','Recent activity'],['wallets','Wallets'],['bills','Bills'],['safe','Safe to Spend']];
+  const homeCardKeys=homeCardDefinitions.map(([key])=>key);
+  function normalizedHomeOrder(){const saved=Array.isArray(state.homeOrder)?state.homeOrder:[];return [...saved.filter((key,index)=>homeCardKeys.includes(key)&&saved.indexOf(key)===index),...homeCardKeys.filter(key=>!saved.includes(key))]}
+  state.homeOrder=normalizedHomeOrder();
+  function homeOrderKey(section){if(section.classList.contains('streak-card'))return 'streak';if(section.classList.contains('dashboard-grid'))return 'summary';if(section.classList.contains('safe-spend-card'))return 'safe';const heading=section.querySelector('h2')?.textContent.trim();return {'Monthly cash flow':'cashflow','Expenses by category':'spending','Recent activity':'activity','Wallets':'wallets','Bills':'bills'}[heading]||''}
+  function applyHomeCardOrder(){if((location.hash.slice(1)||'home')!=='home')return;const sections=[...view.querySelectorAll(':scope > section')],byKey=new Map(sections.map(section=>[homeOrderKey(section),section]).filter(([key])=>key));for(const key of normalizedHomeOrder()){const section=byKey.get(key);if(section)view.append(section)}}
+  const moreBeforeHomeOrder=more;
+  more=function(){const order=normalizedHomeOrder(),organizer=`<div class="home-order-editor"><div><strong>Card order</strong><small>Choose how cards appear on Home.</small></div><div class="home-order-list">${order.map((key,index)=>{const label=homeCardDefinitions.find(item=>item[0]===key)?.[1]||key;return `<div><span>${escC(label)}</span><div><button type="button" data-home-order="${key}" data-home-direction="up" aria-label="Move ${escC(label)} up" title="Move up" ${index===0?'disabled':''}>${svg('up')}</button><button type="button" data-home-order="${key}" data-home-direction="down" aria-label="Move ${escC(label)} down" title="Move down" ${index===order.length-1?'disabled':''}>${svg('down')}</button></div></div>`}).join('')}</div></div>`;return moreBeforeHomeOrder().replace(/(<summary>Home display<\/summary>[\s\S]*?<div class="toggle-grid">[\s\S]*?<\/div>)(<\/details>)/,'$1'+organizer+'$2')};
+  document.addEventListener('click',event=>{const button=event.target.closest('[data-home-order]');if(!button)return;event.preventDefault();const order=normalizedHomeOrder(),from=order.indexOf(button.dataset.homeOrder),to=button.dataset.homeDirection==='up'?from-1:from+1;if(from<0||to<0||to>=order.length)return;[order[from],order[to]]=[order[to],order[from]];state.homeOrder=order;save();render()});
   const renderBeforeWalletPolish=render;
-  render=function(){renderBeforeWalletPolish();setupWalletCarousels()};
+  render=function(){renderBeforeWalletPolish();setupWalletCarousels();applyHomeCardOrder()};
   const homeBeforeSweldo=home;
   home=function(){return homeBeforeSweldo().replace('</div></article></section>',`<button class="icon-only" data-sweldo-shortcut aria-label="Open Sweldo salary app" title="Open Sweldo">${svg('sweldo')}</button></div></article></section>`)};
-  document.addEventListener('click',event=>{const button=event.target.closest('[data-sweldo-shortcut]');if(!button)return;event.preventDefault();window.open('https://vhyxnz.github.io/Sweldo/','_blank','noopener,noreferrer')});
+  document.addEventListener('click',event=>{const button=event.target.closest('[data-sweldo-shortcut]');if(!button)return;event.preventDefault();const link=document.createElement('a');link.href='https://vhyxnz.github.io/Sweldo/';link.target='_blank';link.rel='noopener external';link.click()});
   render();
 })();
