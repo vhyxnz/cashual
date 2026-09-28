@@ -2,7 +2,8 @@
 (()=>{
   Object.assign(icons,{
     qr:'<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M15 14h2v2h-2zm3 3h2v3h-3m-3-2v2"/>',
-    up:'<path d="m6 14 6-6 6 6"/>',down:'<path d="m6 10 6 6 6-6"/>'
+    up:'<path d="m6 14 6-6 6 6"/>',down:'<path d="m6 10 6 6 6-6"/>',
+    sweldo:'<rect x="4" y="3" width="16" height="18" rx="4"/><path d="M8 8h8M8 12h5m-5 4h8M12 6v12"/>'
   });
   state.walletPrivacy??={};
   state.walletLayout||='grid';
@@ -195,5 +196,8 @@
   }
   const renderBeforeWalletPolish=render;
   render=function(){renderBeforeWalletPolish();setupWalletCarousels()};
+  const homeBeforeSweldo=home;
+  home=function(){return homeBeforeSweldo().replace('</div></article></section>',`<button class="icon-only" data-sweldo-shortcut aria-label="Open Sweldo salary app" title="Open Sweldo">${svg('sweldo')}</button></div></article></section>`)};
+  document.addEventListener('click',event=>{const button=event.target.closest('[data-sweldo-shortcut]');if(!button)return;event.preventDefault();window.open('https://vhyxnz.github.io/Sweldo/','_blank','noopener,noreferrer')});
   render();
 })();

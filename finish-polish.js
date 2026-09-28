@@ -49,16 +49,11 @@ function markDailyActivity(){
 }
 function updateDailyStreak(){
   if(!cashualHydrated)return;
-  const today=currentDay();
-  if(state.streak?.mode!=='activity'){
-    state.streak={mode:'activity',count:0,best:0,lastDay:'',recordCount:state.transactions.length};
-    save();return;
-  }
+  if(state.streak?.mode!=='login')state.streak={mode:'login',count:state.streak?.count||0,best:state.streak?.best||0,lastDay:state.streak?.lastDay||'',recordCount:state.transactions.length};
   const streak=state.streak,recordCount=state.transactions.length;
-  let changed=false;
-  if(streak.lastDay&&streak.lastDay!==today&&Math.round((new Date(today+'T12:00:00')-new Date(streak.lastDay+'T12:00:00'))/86400000)>1&&streak.count){streak.count=0;changed=true}
-  if(recordCount>streak.recordCount&&streakSubmissionPending)markDailyActivity();
-  if(streak.recordCount!==recordCount){streak.recordCount=recordCount;changed=true}
+  let changed=streak.recordCount!==recordCount;
+  if(streak.lastDay!==currentDay())markDailyActivity();
+  if(streak.recordCount!==recordCount)streak.recordCount=recordCount;
   streakSubmissionPending=false;
   if(changed)save();
 }
@@ -68,7 +63,7 @@ home=function(){
   if(state.homeSections?.streak===false)return content;
   const streak=state.streak||{count:0,best:0};
   const checked=streak.lastDay===currentDay();
-  return `<section class="card streak-card" aria-label="Daily activity streak"><span class="streak-mark">${svg('flame')}</span><div><strong>${streak.count?`${streak.count}-day streak`:'Start a streak'}</strong><small>${checked?'Activity recorded today':'Log an entry or review today'} · Best ${streak.best||0} ${(streak.best||0)===1?'day':'days'}</small></div>${checked?`<span class="streak-done" aria-label="Checked in">${svg('check')}</span>`:`<button class="streak-review" data-review-today>Review today</button>`}</section>`+content;
+  return `<section class="card streak-card" aria-label="Daily login streak"><span class="streak-mark">${svg('flame')}</span><div><strong>${streak.count?`${streak.count}-day streak`:'Start a streak'}</strong><small>${checked?'Opened today':'Open Cashual today'} · Best ${streak.best||0} ${(streak.best||0)===1?'day':'days'}</small></div><span class="streak-done" aria-label="Checked in">${svg('check')}</span></section>`+content;
 };
 const moreBeforeStreak=more;
 more=function(){return moreBeforeStreak().replace('<summary>Home display</summary><div class="toggle-grid">',`<summary>Home display</summary><div class="toggle-grid"><label><input type="checkbox" data-home-toggle="streak" ${state.homeSections?.streak===false?'':'checked'}> Daily streak</label>`)};
