@@ -55,7 +55,7 @@
   async function maybeSendDeviceAlert(items){
     if(!state.deviceNotifications||!('Notification'in window)||Notification.permission!=='granted'||!items.length)return;
     const notified=new Set(state.deviceNotificationKeys||[]),fresh=items.filter(item=>!notified.has(item.key));if(!fresh.length)return;
-    const options={body:fresh.length===1?fresh[0].title:`${fresh.length} items need your attention`,icon:'cashual-icon-192.png?v=1.4.6',badge:'cashual-icon-192.png?v=1.4.6',tag:'cashual-alert-summary'};
+    const options={body:fresh.length===1?fresh[0].title:`${fresh.length} items need your attention`,icon:'cashual-icon-192.png?v=1.4.8',badge:'cashual-icon-192.png?v=1.4.8',tag:'cashual-alert-summary'};
     try{const registration=await navigator.serviceWorker?.ready;if(registration)await registration.showNotification('Cashual',options);else new Notification('Cashual',options);state.deviceNotificationKeys=items.map(item=>item.key);save()}catch{}
   }
 
