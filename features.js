@@ -68,6 +68,7 @@ function openQuickEntry(type='expense'){
   if(!walletChoices().length){toastMsg('Add a wallet first');openForm('wallet');return}
   if(quickDialog.open)quickDialog.close();quickType=type;quickCategory='';quickEntryForm.reset();
   quickWallet.innerHTML=walletChoices().map(([id,name])=>`<option value="${escC(id)}">${escC(name)}</option>`).join('');
+  quickEntryForm.elements.date.value=currentDay();
   updateQuickCategories();quickEntryDialog.showModal();
   requestAnimationFrame(()=>quickEntryForm.elements.amount.focus());
 }
@@ -79,10 +80,11 @@ document.addEventListener('click',event=>{
   if(event.target.closest('[data-quick-close]'))quickEntryDialog.close();
 },true);
 quickEntryForm.addEventListener('submit',event=>{
-  event.preventDefault();const d=Object.fromEntries(new FormData(quickEntryForm)),amount=+d.amount,w=state.wallets.find(x=>x.id===d.walletId),category=state.categories.find(x=>x.id===quickCategory);
+  event.preventDefault();const d=Object.fromEntries(new FormData(quickEntryForm)),amount=+d.amount,w=state.wallets.find(x=>x.id===d.walletId),category=state.categories.find(x=>x.id===quickCategory),date=flexibleDate(d.date);
   if(!w||!Number.isFinite(amount)||amount<=0)return toastMsg('Enter a valid amount and wallet');
+  if(!date){quickEntryForm.elements.date.focus();return toastMsg('Enter a valid date, such as today or 10/04/2026')}
   const signed=quickType==='expense'?-amount:amount;w.balance+=signed;
-  state.transactions.unshift({id:crypto.randomUUID(),type:quickType,title:d.title?.trim()||category?.name||quickType,amount:signed,walletId:w.id,wallet:w.name,categoryId:category?.id||'',category:category?.name||quickType,isoDate:currentDay(),time:new Date().toTimeString().slice(0,5)});
+  state.transactions.unshift({id:crypto.randomUUID(),type:quickType,title:d.title?.trim()||category?.name||quickType,amount:signed,walletId:w.id,wallet:w.name,categoryId:category?.id||'',category:category?.name||quickType,isoDate:date,time:new Date().toTimeString().slice(0,5)});
   save();quickEntryDialog.close();render();toastMsg('Transaction saved');
 });
 
@@ -111,7 +113,8 @@ entryForm.onsubmit=async event=>{
   return priorBillSubmit(event);
 };
 function billDate(b){if(/^\d{4}-\d{2}-\d{2}$/.test(b.dueDate||''))return b.dueDate;const parsed=new Date(`${b.date||''} ${new Date().getFullYear()}`);return Number.isNaN(+parsed)?currentDay():`${parsed.getFullYear()}-${String(parsed.getMonth()+1).padStart(2,'0')}-${String(parsed.getDate()).padStart(2,'0')}`}
-function advanceBill(date,repeat){if(repeat==='never')return date;let next=date;do{next=nextInterestDate(next,repeat)}while(next<=currentDay());return next}
+function nextBillDate(date,frequency){const d=new Date((date||currentDay())+'T12:00:00'),day=d.getDate();if(frequency==='weekly')d.setDate(day+7);else if(frequency==='monthly'){d.setDate(1);d.setMonth(d.getMonth()+1);d.setDate(Math.min(day,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()))}else if(frequency==='yearly'){d.setDate(1);d.setFullYear(d.getFullYear()+1);d.setDate(Math.min(day,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()))}else d.setDate(day+1);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function advanceBill(date,repeat){if(repeat==='never')return date;let next=date;do{next=nextBillDate(next,repeat)}while(next<=currentDay());return next}
 function billStatus(b){if(b.status==='Paid'&&(!b.repeat||b.repeat==='never'))return 'Paid';const due=billDate(b),days=Math.ceil((new Date(due+'T12:00:00')-new Date(currentDay()+'T12:00:00'))/86400000);return days<0?'Overdue':days===0?'Due today':days<=7?`Due in ${days} days`:'Upcoming'}
 bills=function(){const sorted=[...state.bills].sort((a,b)=>billDate(a).localeCompare(billDate(b)));return `<section><div class="page-head"><div><h2>Bills & subscriptions</h2><p>See what is due, overdue, and repeating.</p></div><button class="primary-btn" data-open="bill">Add bill</button></div><div class="bill-list">${sorted.length?sorted.map(b=>`<div class="card bill-card"><div class="tx-icon bill-logo">${b.image?`<img src="${b.image}" alt="">`:userIcon(b.icon||'receipt')}</div><div class="bill-info"><strong>${escC(b.name)}</strong><small>${escC(b.category||'Other')} · ${escC(billDate(b))} · ${escC(b.repeat||'One time')}${b.note?` · ${escC(b.note)}`:''}</small></div><strong class="money">${cash(b.amount)}</strong><span class="due-badge ${billStatus(b).startsWith('Overdue')?'overdue':''}">${billStatus(b)}</span><button class="text-btn" data-edit-bill-id="${escC(b.id)}">Edit</button>${billStatus(b)!=='Paid'?`<button class="ghost-btn" data-pay-bill="${escC(b.id)}">Mark paid</button>`:''}</div>`).join(''):'<div class="card empty">No bills yet</div>'}</div></section>`};
 document.addEventListener('click',event=>{

@@ -23,7 +23,6 @@ function iconForControl(button,label){
   if(d.loanPayment||d.payBill)return 'check';
   if(d.walletTransfer)return 'transfer';
   if(d.walletFunds)return 'income';
-  if(d.interestWallet)return 'income';
   if(d.exportJson!==undefined||d.export!==undefined)return 'download';
   if(d.restoreLocal!==undefined)return 'archive';
   if(d.persistStorage!==undefined)return 'archive';
