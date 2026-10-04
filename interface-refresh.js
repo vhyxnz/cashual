@@ -51,5 +51,9 @@
 
   const interfaceRenderBase=render;
   render=function(){interfaceRenderBase();document.body.classList.add('interface-refreshed')};
+  const stopViewportGesture=event=>event.preventDefault();
+  document.addEventListener('gesturestart',stopViewportGesture,{passive:false});
+  document.addEventListener('gesturechange',stopViewportGesture,{passive:false});
+  document.addEventListener('gestureend',stopViewportGesture,{passive:false});
   render();
 })();
