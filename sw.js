@@ -1,8 +1,8 @@
-const VERSION='1.3.10';
+const VERSION='1.4.0';
 const CACHE=`cashual-v${VERSION}`;
 const ROOT=new URL('./',self.location.href).href;
 const INDEX=new URL('index.html',self.location.href).href;
-const ASSETS=['./','index.html','sweldo.html?v=1.3.10','styles.css?v=1.3.10','app.js?v=1.3.10','enhancements.js?v=1.3.10','features.js?v=1.3.10','ui-polish.js?v=1.3.10','navigation-data.js?v=1.3.10','finish-polish.js?v=1.3.10','expenses-polish.js?v=1.3.10','interaction-polish.js?v=1.3.10','allocator.js?v=1.3.10','transaction-updates.js?v=1.3.10','theme-custom.js?v=1.3.10','category-maker.js?v=1.3.10','settings-editor.js?v=1.3.10','wallet-polish.js?v=1.3.10','manifest.webmanifest?v=1.3.10','cashual-mark.svg','cashual-mark.svg?v=1.3.10','cashual-icon-180.png?v=1.3.10','cashual-icon-192.png?v=1.3.10','cashual-icon-512.png?v=1.3.10'];
+const ASSETS=['./','index.html','sweldo.html?v=1.4.0','styles.css?v=1.4.0','app.js?v=1.4.0','enhancements.js?v=1.4.0','features.js?v=1.4.0','ui-polish.js?v=1.4.0','navigation-data.js?v=1.4.0','finish-polish.js?v=1.4.0','expenses-polish.js?v=1.4.0','interaction-polish.js?v=1.4.0','allocator.js?v=1.4.0','transaction-updates.js?v=1.4.0','theme-custom.js?v=1.4.0','category-maker.js?v=1.4.0','settings-editor.js?v=1.4.0','wallet-polish.js?v=1.4.0','interface-refresh.js?v=1.4.0','manifest.webmanifest?v=1.4.0','cashual-mark.svg','cashual-mark.svg?v=1.4.0','cashual-icon-180.png?v=1.4.0','cashual-icon-192.png?v=1.4.0','cashual-icon-512.png?v=1.4.0'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
   self.skipWaiting();
