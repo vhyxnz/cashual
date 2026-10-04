@@ -91,6 +91,7 @@
     if(type&&!Array.from(type.options).some(option=>option.value==='Investment'))type.insertAdjacentHTML('beforeend','<option value="Investment">Investment</option>');
     const group=wallet?.group||defaultGroup({type:type?.value});
     grid.insertAdjacentHTML('beforeend',`${field('Account label (optional)','identifier','text',wallet?.identifier||'','placeholder="Last four digits or nickname"')}${select('Group','group',groupChoices.map(name=>[name,name]),group)}`);
+    if(wallet)formFields.insertAdjacentHTML('beforeend',`<button type="button" class="danger-action wallet-form-delete" data-wallet-delete="${escC(wallet.id)}">${svg('trash')}<span>Delete wallet</span></button>`);
   };
 
   const walletSubmitBeforePolish=entryForm.onsubmit;
@@ -177,7 +178,8 @@
       return;
     }
     if(!confirm(`Delete “${wallet.name}”? Its transaction history will be kept, but this wallet cannot be restored.`))return;
-    state.wallets=state.wallets.filter(item=>item.id!==wallet.id);state.loans?.forEach(loan=>{if(loan.walletId===wallet.id)loan.walletId=''});delete state.walletPrivacy[wallet.id];
+    state.wallets=state.wallets.filter(item=>item.id!==wallet.id);state.loans?.forEach(loan=>{if(loan.walletId===wallet.id)loan.walletId=''});state.bills?.forEach(bill=>{if(bill.walletId===wallet.id)bill.walletId=''});if(Array.isArray(state.safeSpend?.walletIds))state.safeSpend.walletIds=state.safeSpend.walletIds.filter(walletId=>walletId!==wallet.id);delete state.walletPrivacy[wallet.id];
+    if(formDialog.open&&editRecord?.kind==='wallet'&&editRecord.id===wallet.id){editRecord=null;formDialog.close()}
     save();if(selectedWallet===wallet.id){selectedWallet=null;location.hash='wallets'}render();toastMsg('Wallet deleted; transaction history kept');
   },true);
 
@@ -209,6 +211,6 @@
   render=function(){renderBeforeWalletPolish();setupWalletCarousels();applyHomeCardOrder();decorateHomeBills()};
   const homeBeforeSweldo=home;
   home=function(){return homeBeforeSweldo().replace('</div></article></section>',`<button class="icon-only" data-sweldo-shortcut aria-label="Open Sweldo salary app" title="Open Sweldo">${svg('sweldo')}</button></div></article></section>`)};
-  document.addEventListener('click',event=>{const button=event.target.closest('[data-sweldo-shortcut]');if(!button)return;event.preventDefault();window.location.assign(new URL('sweldo.html?v=1.4.2',document.baseURI).href)});
+  document.addEventListener('click',event=>{const button=event.target.closest('[data-sweldo-shortcut]');if(!button)return;event.preventDefault();window.location.assign(new URL('sweldo.html?v=1.4.6',document.baseURI).href)});
   render();
 })();

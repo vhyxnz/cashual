@@ -1,11 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Cashual">
   <defs>
-    <linearGradient id="surface" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#1c3c30"/><stop offset="1" stop-color="#0c1b17"/></linearGradient>
-    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c5e891"/><stop offset=".5" stop-color="#518f72"/><stop offset="1" stop-color="#254536"/></linearGradient>
-    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#eff8cb"/><stop offset=".42" stop-color="#b6df81"/><stop offset="1" stop-color="#4ea988"/></linearGradient>
+    <linearGradient id="surface" x1="7" y1="4" x2="58" y2="61" gradientUnits="userSpaceOnUse"><stop stop-color="#244d3d"/><stop offset=".52" stop-color="#17372d"/><stop offset="1" stop-color="#091713"/></linearGradient>
+    <linearGradient id="mark" x1="16" y1="13" x2="48" y2="51" gradientUnits="userSpaceOnUse"><stop stop-color="#f2f8d7"/><stop offset=".48" stop-color="#c2e78d"/><stop offset="1" stop-color="#55ad88"/></linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientTransform="translate(14 10) rotate(48) scale(49)"><stop stop-color="#fff" stop-opacity=".14"/><stop offset=".72" stop-color="#fff" stop-opacity="0"/></radialGradient>
   </defs>
-  <rect x="2.5" y="2.5" width="59" height="59" rx="18" fill="url(#surface)" stroke="url(#edge)" stroke-width="1.5"/>
-  <path d="M45 20.5a19 19 0 1 0 0 23" fill="none" stroke="url(#metal)" stroke-width="7" stroke-linecap="round"/>
-  <path d="M44 24c-2.6-2.5-6.2-3.8-10-3.8a12 12 0 0 0 0 24c3.8 0 7.4-1.3 10-3.8" fill="none" stroke="#2d6d59" stroke-width="1.5" opacity=".8" stroke-linecap="round"/>
-  <circle cx="47" cy="20" r="3" fill="#e8cd89"/>
+  <rect width="64" height="64" fill="url(#surface)"/>
+  <rect width="64" height="64" fill="url(#glow)"/>
+  <g transform="translate(5.44 5.44) scale(.83)">
+    <path d="M46.5 17.6A21 21 0 1 0 46.5 46.4" fill="none" stroke="url(#mark)" stroke-width="7.5" stroke-linecap="round"/>
+    <path d="M43.5 23.4A13.3 13.3 0 1 0 43.5 40.6" fill="none" stroke="#63b591" stroke-width="2" stroke-linecap="round" opacity=".9"/>
+    <circle cx="47.5" cy="17.8" r="3.1" fill="#e6cc83"/>
+  </g>
 </svg>

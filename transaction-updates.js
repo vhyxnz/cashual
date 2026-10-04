@@ -1,5 +1,5 @@
 /* Split purchases and linked refunds keep one wallet movement per real event. */
-const CASHUAL_RELEASE='1.4.2';
+const CASHUAL_RELEASE='1.4.6';
 const expenseCategories=()=>state.categories.filter(c=>c.group!=='income');
 const cents=n=>Math.round((+n||0)*100);
 function cashualParts(tx){
@@ -63,7 +63,7 @@ enhanceForm=function(kind,id=''){
   const tx=state.transactions.find(item=>String(item.id)===String(id));
   const amountField=formFields.querySelector('[name="amount"]')?.closest('label');
   if(!amountField)return;
-  amountField.insertAdjacentHTML('afterend',`<div class="split-editor"><label class="split-toggle"><input type="checkbox" data-split-toggle ${tx?.splits?.length?'checked':''}> Split across categories</label><div class="split-panel" ${tx?.splits?.length?'':'hidden'}><p>One wallet deduction, multiple category portions.</p><div class="split-rows"></div><button type="button" class="ghost-btn split-add" data-split-add>${svg('add')} Add category</button><small class="split-total" role="status"></small></div></div>`);
+  amountField.insertAdjacentHTML('afterend',`<div class="split-editor"><label class="split-toggle"><input type="checkbox" data-split-toggle ${tx?.splits?.length?'checked':''}> Split across categories</label><div class="split-panel" ${tx?.splits?.length?'':'hidden'}><p>Add as many category portions as needed. The wallet is deducted only once.</p><div class="split-rows"></div><button type="button" class="ghost-btn split-add" data-split-add>${svg('add')}<span>Add another category</span></button><small class="split-total" role="status"></small></div></div>`);
   if(tx?.splits?.length)tx.splits.forEach(part=>appendSplitRow(part));
   updateSplitTotal();
 };
@@ -77,7 +77,8 @@ function appendSplitRow(part={}){
 function updateSplitTotal(){
   const panel=formFields.querySelector('.split-panel'),status=panel?.querySelector('.split-total');if(!status)return;
   const amount=cents(entryForm.elements.amount?.value),sum=[...panel.querySelectorAll('.split-row input')].reduce((total,input)=>total+cents(input.value),0),left=amount-sum;
-  status.textContent=`${cash(sum/100)} allocated · ${left<0?`${cash(-left/100)} over`:`${cash(left/100)} remaining`}`;
+  const count=panel.querySelectorAll('.split-row').length;
+  status.textContent=`${count} categor${count===1?'y':'ies'} · ${cash(sum/100)} allocated · ${left<0?`${cash(-left/100)} over`:`${cash(left/100)} remaining`}`;
   status.classList.toggle('split-mismatch',left!==0);
 }
 document.addEventListener('change',event=>{
